@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Edit2, Trash2, Users, Calendar, Trophy, IndianRupee, GamepadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { tournamentService } from '@/services/tournamentService'
+import { adminService } from '@/services/adminService'
 import { useAuthStore } from '@/store/authStore'
 
 export default function AdminTournamentViewPage() {
@@ -16,7 +16,7 @@ export default function AdminTournamentViewPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    tournamentService.getById(id as string).then(t => { setTournament(t); setLoading(false) }).catch(() => setLoading(false))
+    adminService.getTournament(id as string).then(t => { setTournament(t); setLoading(false) }).catch(() => setLoading(false))
   }, [id])
 
   const handleDelete = async () => {
