@@ -35,8 +35,13 @@ export default function LoginPage() {
     try {
       const res = await authService.login(data.email, data.password)
       login(res.user, res.token)
-      toast.success('Welcome back! 🎮')
-      router.push('/dashboard/tournaments')
+      toast.success('Welcome back!')
+      const role = res.user?.role
+      if (role === 'admin' || role === 'super_admin') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/dashboard/tournaments')
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please try again.'
       toast.error(msg)
@@ -54,11 +59,13 @@ export default function LoginPage() {
       {/* Logo */}
       <div className="text-center mb-8">
         <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
-            <span className="text-white font-gaming font-bold">IE</span>
+          <div className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #FF6B2B 0%, #F59E0B 100%)', boxShadow: '0 0 16px rgba(255,107,43,0.4)' }}>
+            <span className="text-white font-rajdhani font-black text-base leading-none">G</span>
+            <div className="absolute bottom-0 left-0 right-0 h-1"
+              style={{ background: 'linear-gradient(90deg, #FF9933 33%, #FFFFFF 33% 66%, #138808 66%)' }} />
           </div>
-          <span className="font-gaming font-bold text-xl gradient-text">{PLATFORM_NAME}</span>
+          <span className="font-rajdhani font-black text-xl" style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{PLATFORM_NAME}</span>
         </Link>
         <h1 className="text-2xl font-bold text-white mb-1">Welcome Back, Champion</h1>
         <p className="text-slate-400 text-sm">{PLATFORM_TAGLINE}</p>
@@ -138,7 +145,7 @@ export default function LoginPage() {
       </div>
 
       <p className="text-center text-slate-400 text-sm mt-5">
-        New to IndiaEsports?{' '}
+        New to EsportsG?{' '}
         <Link href="/auth/register" className="text-neon-blue hover:text-neon-cyan font-medium transition-colors">
           Create account
         </Link>
