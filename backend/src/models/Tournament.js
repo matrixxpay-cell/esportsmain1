@@ -4,7 +4,7 @@ const participantSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   username: String,
   avatar: String,
-  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String }],
+  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String, isSubstitute: { type: Boolean, default: false } }],
   joinedAt: { type: Date, default: Date.now },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'paid' },
   paymentId: String,
@@ -62,6 +62,7 @@ const tournamentSchema = new mongoose.Schema({
   participants: [participantSchema],
   brackets: [bracketMatchSchema],
   isFeatured: { type: Boolean, default: false },
+  maxSubstitutes: { type: Number, default: 0, min: 0, max: 3 },
   tags: [String],
 }, {
   timestamps: true,
