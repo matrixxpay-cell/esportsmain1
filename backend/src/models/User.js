@@ -50,9 +50,6 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 })
 
-userSchema.index({ email: 1 })
-userSchema.index({ username: 1 })
-userSchema.index({ referralCode: 1 })
 userSchema.index({ 'stats.points': -1 })
 
 // Virtual for wallet
