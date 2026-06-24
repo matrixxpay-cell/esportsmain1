@@ -35,7 +35,7 @@ const tournamentSchema = new mongoose.Schema({
     required: true,
     enum: ['csgo', 'mobile-legends', 'bgmi', 'free-fire', 'valorant', 'dota2', 'efootball'],
   },
-  gameMode: { type: String, enum: ['solo', 'duo', 'squad'], required: true },
+  gameMode: { type: String, enum: ['solo', 'duo', 'squad', '5v5'], required: true },
   type: { type: String, enum: ['free', 'paid'], required: true },
   entryFee: { type: Number, default: 0, min: 0 },
   prizePool: { type: Number, required: true, min: 0 },

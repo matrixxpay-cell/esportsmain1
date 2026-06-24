@@ -11,13 +11,13 @@ import { Trophy, ArrowLeft, Zap } from 'lucide-react'
 import { GAMES } from '@/constants/games'
 import { adminService } from '@/services/adminService'
 
-const MODE_LABELS: Record<string, string> = { solo: 'Solo', duo: 'Duo', squad: 'Squad' }
+const MODE_LABELS: Record<string, string> = { solo: 'Solo', duo: 'Duo', squad: 'Squad (4)', '5v5': '5v5 Team' }
 
 const schema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(100),
   description: z.string().min(20, 'Description must be at least 20 characters'),
   game: z.string().min(1, 'Select a game'),
-  gameMode: z.enum(['solo', 'duo', 'squad']),
+  gameMode: z.enum(['solo', 'duo', 'squad', '5v5']),
   type: z.enum(['free', 'paid']),
   entryFee: z.number().min(0),
   prizePool: z.number().min(100, 'Minimum prize pool is ₹100'),

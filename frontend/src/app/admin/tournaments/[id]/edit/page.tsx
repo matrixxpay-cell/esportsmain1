@@ -16,7 +16,7 @@ const schema = z.object({
   title: z.string().min(5),
   description: z.string().min(10),
   game: z.string().min(1),
-  gameMode: z.enum(['solo', 'duo', 'squad']),
+  gameMode: z.enum(['solo', 'duo', 'squad', '5v5']),
   type: z.enum(['free', 'paid']),
   entryFee: z.number().min(0),
   prizePool: z.number().min(100),
