@@ -196,3 +196,15 @@ exports.publishResults = async (req, res) => {
     return error(res, 'Failed to publish results', 500, err.message)
   }
 }
+
+exports.deleteTournament = async (req, res) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id)
+    if (!tournament) return error(res, 'Tournament not found', 404)
+    if (tournament.status === 'ongoing') return error(res, 'Cannot delete an ongoing tournament', 400)
+    await Tournament.findByIdAndDelete(req.params.id)
+    return success(res, null, 'Tournament deleted.')
+  } catch (err) {
+    return error(res, 'Failed to delete tournament', 500, err.message)
+  }
+}
