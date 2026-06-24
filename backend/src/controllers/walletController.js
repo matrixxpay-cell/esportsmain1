@@ -4,9 +4,9 @@ const Wallet = require('../models/Wallet')
 const Transaction = require('../models/Transaction')
 const { success, error, paginate } = require('../utils/response')
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+const getRazorpay = () => new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'placeholder',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder',
 })
 
 exports.getBalance = async (req, res) => {
@@ -31,7 +31,7 @@ exports.createDepositOrder = async (req, res) => {
     if (!amount || amount < 10) return error(res, 'Minimum deposit is ₹10', 400)
     if (amount > 50000) return error(res, 'Maximum single deposit is ₹50,000', 400)
 
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: Math.round(amount * 100),
       currency: 'INR',
       receipt: `dep_${req.user._id}_${Date.now()}`,

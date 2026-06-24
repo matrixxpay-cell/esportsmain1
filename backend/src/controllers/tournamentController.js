@@ -5,9 +5,9 @@ const { success, error, paginate } = require('../utils/response')
 const Razorpay = require('razorpay')
 const crypto = require('crypto')
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+const getRazorpay = () => new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'placeholder',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder',
 })
 
 exports.getTournaments = async (req, res) => {
@@ -93,7 +93,7 @@ exports.registerForTournament = async (req, res) => {
     }
 
     // For paid, create Razorpay order
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: tournament.entryFee * 100,
       currency: 'INR',
       receipt: `t_${tournament._id}_${req.user._id}`,
