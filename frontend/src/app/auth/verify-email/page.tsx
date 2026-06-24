@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -9,7 +9,7 @@ import { authService } from '@/services/authService'
 import toast from 'react-hot-toast'
 import { PLATFORM_NAME } from '@/constants'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<'pending' | 'verifying' | 'success' | 'error'>('pending')
@@ -103,5 +103,13 @@ export default function VerifyEmailPage() {
         <Link href="/auth/login" className="text-neon-blue hover:text-neon-cyan">Back to Login</Link>
       </p>
     </motion.div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-slate-400">Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }
