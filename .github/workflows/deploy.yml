@@ -1,0 +1,111 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ─── 1. Run tests ────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package.json
+
+      - name: Install backend deps
+        run: cd backend && npm ci
+
+      - name: Run backend tests
+        run: cd backend && npm test --if-present
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-secret
+          MONGODB_URI: mongodb://localhost:27017/test
+
+  # ─── 2. Deploy to VPS ───────────────────────────────────
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="/home/${{ secrets.VPS_USER }}/esports"
+            LOG_DIR="$APP_DIR/logs"
+
+            echo "── Creating directories ──"
+            mkdir -p "$APP_DIR" "$LOG_DIR"
+            cd "$APP_DIR"
+
+            echo "── Pulling latest code ──"
+            if [ -d ".git" ]; then
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone https://github.com/${{ github.repository }}.git .
+              git checkout main
+            fi
+
+            echo "── Installing backend dependencies ──"
+            cd "$APP_DIR/backend"
+            npm ci --omit=dev
+
+            echo "── Installing frontend dependencies ──"
+            cd "$APP_DIR/frontend"
+            npm ci
+
+            echo "── Building frontend ──"
+            npm run build
+
+            echo "── Restarting PM2 processes ──"
+            cd "$APP_DIR"
+
+            # Copy PM2 ecosystem config
+            cp ecosystem.config.js "$APP_DIR/ecosystem.config.js" 2>/dev/null || true
+
+            if pm2 list | grep -q "esports-backend"; then
+              pm2 reload ecosystem.config.js --env production
+            else
+              pm2 start ecosystem.config.js --env production
+            fi
+
+            pm2 save
+
+            echo "── Running health check ──"
+            sleep 5
+            curl -sf http://localhost:5000/health > /dev/null && echo "Backend: OK" || echo "Backend: FAILED"
+            curl -sf http://localhost:3000 > /dev/null && echo "Frontend: OK" || echo "Frontend: FAILED"
+
+            echo "── Deploy complete ──"
+            pm2 status
+
+      - name: Notify deploy status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "Deployment succeeded for commit ${{ github.sha }}"
+          else
+            echo "Deployment FAILED for commit ${{ github.sha }}"
+          fi
