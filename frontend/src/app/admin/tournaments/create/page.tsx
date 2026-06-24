@@ -9,6 +9,9 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { Trophy, ArrowLeft, Zap } from 'lucide-react'
 import { GAMES } from '@/constants/games'
+import { adminService } from '@/services/adminService'
+
+const MODE_LABELS: Record<string, string> = { solo: 'Solo', duo: 'Duo', squad: 'Squad' }
 
 const schema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(100),
@@ -19,8 +22,8 @@ const schema = z.object({
   entryFee: z.number().min(0),
   prizePool: z.number().min(100, 'Minimum prize pool is ₹100'),
   maxSlots: z.number().min(2).max(1000),
-  registrationDeadline: z.string(),
-  startDate: z.string(),
+  registrationDeadline: z.string().min(1, 'Required'),
+  startDate: z.string().min(1, 'Required'),
   rules: z.string().optional(),
 })
 
@@ -30,21 +33,32 @@ export default function CreateTournamentPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { type: 'free', gameMode: 'squad', entryFee: 0 },
+    defaultValues: { type: 'free', gameMode: 'solo', entryFee: 0 },
   })
 
   const tournamentType = watch('type')
+  const selectedGameId = watch('game')
+  const selectedGame = GAMES.find(g => g.id === selectedGameId)
+  const availableModes = selectedGame?.modes ?? ['solo', 'duo', 'squad']
+
+  const handleGameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const game = GAMES.find(g => g.id === e.target.value)
+    setValue('game', e.target.value)
+    if (game && !game.modes.includes(watch('gameMode') as any)) {
+      setValue('gameMode', game.modes[0])
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true)
     try {
-      // In production: await tournamentService.createTournament(data)
+      await adminService.createTournament(data)
       toast.success('Tournament created successfully!')
       router.push('/admin/tournaments')
-    } catch {
-      toast.error('Failed to create tournament')
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create tournament')
     } finally {
       setIsLoading(false)
     }
@@ -66,7 +80,7 @@ export default function CreateTournamentPage() {
         {/* Basic Info */}
         <div className="glass-card rounded-2xl p-6">
           <h2 className="font-semibold text-white mb-5 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-neon-blue" /> Basic Information
+            <Trophy className="w-4 h-4 text-saffron" /> Basic Information
           </h2>
           <div className="space-y-4">
             <div>
@@ -82,18 +96,18 @@ export default function CreateTournamentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">Game *</label>
-                <select {...register('game')} className="input-glass">
+                <select {...register('game')} onChange={handleGameChange} className="input-glass">
                   <option value="">Select Game</option>
-                  {GAMES.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                  {GAMES.map(g => <option key={g.id} value={g.id}>{g.shortName}</option>)}
                 </select>
                 {errors.game && <p className="text-red-400 text-xs mt-1">{errors.game.message}</p>}
               </div>
               <div>
                 <label className="block text-sm text-slate-300 mb-1.5">Mode *</label>
                 <select {...register('gameMode')} className="input-glass">
-                  <option value="solo">Solo</option>
-                  <option value="duo">Duo</option>
-                  <option value="squad">Squad</option>
+                  {availableModes.map(m => (
+                    <option key={m} value={m}>{MODE_LABELS[m]}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -108,7 +122,7 @@ export default function CreateTournamentPage() {
         {/* Prize & Entry */}
         <div className="glass-card rounded-2xl p-6">
           <h2 className="font-semibold text-white mb-5 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-neon-blue" /> Prize & Entry
+            <Zap className="w-4 h-4 text-saffron" /> Prize & Entry
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -139,10 +153,12 @@ export default function CreateTournamentPage() {
             <div>
               <label className="block text-sm text-slate-300 mb-1.5">Registration Deadline *</label>
               <input {...register('registrationDeadline')} type="datetime-local" className="input-glass" />
+              {errors.registrationDeadline && <p className="text-red-400 text-xs mt-1">{errors.registrationDeadline.message}</p>}
             </div>
             <div>
               <label className="block text-sm text-slate-300 mb-1.5">Start Date *</label>
               <input {...register('startDate')} type="datetime-local" className="input-glass" />
+              {errors.startDate && <p className="text-red-400 text-xs mt-1">{errors.startDate.message}</p>}
             </div>
           </div>
         </div>
@@ -156,7 +172,7 @@ export default function CreateTournamentPage() {
 
         <div className="flex gap-4">
           <button type="submit" disabled={isLoading}
-            className="btn-neon flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-white disabled:opacity-60">
+            className="btn-primary flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-white disabled:opacity-60">
             {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Trophy className="w-4 h-4" /> Create Tournament</>}
           </button>
           <button type="button" onClick={() => router.back()}

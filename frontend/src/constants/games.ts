@@ -12,6 +12,7 @@ export interface Game {
   platforms: string[]
   maxTeamSize: number
   minTeamSize: number
+  modes: Array<'solo' | 'duo' | 'squad'>
 }
 
 export const GAMES: Game[] = [
@@ -29,6 +30,7 @@ export const GAMES: Game[] = [
     platforms: ['PC'],
     maxTeamSize: 5,
     minTeamSize: 1,
+    modes: ['solo', 'squad'],
   },
   {
     id: 'mobile-legends',
@@ -44,6 +46,7 @@ export const GAMES: Game[] = [
     platforms: ['Mobile'],
     maxTeamSize: 5,
     minTeamSize: 1,
+    modes: ['solo', 'squad'],
   },
   {
     id: 'bgmi',
@@ -59,6 +62,7 @@ export const GAMES: Game[] = [
     platforms: ['Mobile'],
     maxTeamSize: 4,
     minTeamSize: 1,
+    modes: ['solo', 'duo', 'squad'],
   },
   {
     id: 'free-fire',
@@ -74,6 +78,7 @@ export const GAMES: Game[] = [
     platforms: ['Mobile'],
     maxTeamSize: 4,
     minTeamSize: 1,
+    modes: ['solo', 'duo', 'squad'],
   },
   {
     id: 'valorant',
@@ -89,6 +94,7 @@ export const GAMES: Game[] = [
     platforms: ['PC'],
     maxTeamSize: 5,
     minTeamSize: 1,
+    modes: ['solo', 'squad'],
   },
   {
     id: 'dota2',
@@ -104,6 +110,7 @@ export const GAMES: Game[] = [
     platforms: ['PC'],
     maxTeamSize: 5,
     minTeamSize: 1,
+    modes: ['solo', 'squad'],
   },
   {
     id: 'efootball',
@@ -119,6 +126,7 @@ export const GAMES: Game[] = [
     platforms: ['PC', 'Mobile', 'Console'],
     maxTeamSize: 1,
     minTeamSize: 1,
+    modes: ['solo'],
   },
 ]
 
