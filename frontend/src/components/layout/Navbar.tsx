@@ -36,12 +36,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
-              <span className="text-white font-gaming font-bold text-sm">IE</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            {/* EsportsG Logo Mark */}
+            <div className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #FF6B2B 0%, #F59E0B 100%)', boxShadow: '0 0 16px rgba(255,107,43,0.4)' }}>
+              <span className="text-white font-rajdhani font-black text-base leading-none">G</span>
+              {/* Tricolor bottom bar */}
+              <div className="absolute bottom-0 left-0 right-0 h-1"
+                style={{ background: 'linear-gradient(90deg, #FF9933 33%, #FFFFFF 33% 66%, #138808 66%)' }} />
             </div>
-            <span className="font-gaming font-bold text-lg gradient-text">{PLATFORM_NAME}</span>
+            <div className="flex flex-col leading-none">
+              <span className="font-rajdhani font-black text-xl tracking-wide" style={{
+                background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>Esports<span className="text-white" style={{ WebkitTextFillColor: 'white' }}>G</span></span>
+              <span className="text-slate-500 text-[9px] tracking-widest uppercase font-medium">India&apos;s #1 Platform</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -52,7 +62,7 @@ export default function Navbar() {
                 href={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   pathname === link.href
-                    ? 'text-neon-blue bg-neon-blue/10'
+                    ? 'text-saffron bg-saffron-100'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -86,7 +96,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 glass-card px-3 py-2 rounded-lg hover:border-white/20 transition-all duration-200"
                   >
                     <div className="w-7 h-7 rounded-full overflow-hidden"
-                      style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
+                      style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)' }}>
                       {user.avatar ? (
                         <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
                       ) : (
@@ -151,8 +161,8 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link href="/auth/register"
-                  className="btn-neon px-5 py-2 rounded-lg text-sm font-semibold text-white">
-                  Play Now
+                  className="btn-primary px-5 py-2 rounded-lg text-sm font-semibold text-white">
+                  Khelo Abhi
                 </Link>
               </>
             )}
@@ -196,8 +206,8 @@ export default function Navbar() {
                     Login
                   </Link>
                   <Link href="/auth/register" onClick={() => setIsMobileOpen(false)}
-                    className="flex-1 text-center btn-neon px-4 py-2.5 rounded-xl text-sm font-semibold text-white">
-                    Play Now
+                    className="flex-1 text-center btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold text-white">
+                    Khelo Abhi
                   </Link>
                 </div>
               ) : (

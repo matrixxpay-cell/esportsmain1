@@ -1,7 +1,7 @@
-export const PLATFORM_NAME = 'IndiaEsports'
+export const PLATFORM_NAME = 'EsportsG'
 export const PLATFORM_TAGLINE = 'Ab Nahi Khelega India Toh Kab Khelega?'
 export const PLATFORM_TAGLINE_HINDI = 'अब नहीं खेलेगा इंडिया तो कब खेलेगा?'
-export const PLATFORM_SHORT_DESC = 'India\'s Premier Esports Tournament Platform'
+export const PLATFORM_SHORT_DESC = 'India Ka Apna Esports Tournament Platform'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 export const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000'
