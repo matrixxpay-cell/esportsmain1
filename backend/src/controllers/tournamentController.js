@@ -73,6 +73,19 @@ exports.updateTournament = async (req, res) => {
   }
 }
 
+exports.updateStatus = async (req, res) => {
+  try {
+    const { status } = req.body
+    const validStatuses = ['upcoming', 'registration_open', 'registration_closed', 'ongoing', 'completed', 'cancelled']
+    if (!validStatuses.includes(status)) return error(res, 'Invalid status', 400)
+    const tournament = await Tournament.findByIdAndUpdate(req.params.id, { status }, { new: true })
+    if (!tournament) return error(res, 'Tournament not found', 404)
+    return success(res, tournament, `Status updated to ${status}`)
+  } catch (err) {
+    return error(res, 'Failed to update status', 500, err.message)
+  }
+}
+
 exports.registerForTournament = async (req, res) => {
   try {
     const tournament = await Tournament.findById(req.params.id)

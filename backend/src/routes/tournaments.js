@@ -9,6 +9,7 @@ router.get('/:id', tournamentController.getTournament)
 
 router.post('/', adminAuth, tournamentController.createTournament)
 router.put('/:id', adminAuth, tournamentController.updateTournament)
+router.patch('/:id/status', adminAuth, tournamentController.updateStatus)
 router.delete('/:id', adminAuth, tournamentController.deleteTournament)
 router.post('/:id/results', adminAuth, tournamentController.publishResults)
 

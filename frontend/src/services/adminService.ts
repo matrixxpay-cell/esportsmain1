@@ -60,4 +60,9 @@ export const adminService = {
     const res = await api.post('/tournaments', data)
     return res.data.data
   },
+
+  updateTournamentStatus: async (id: string, status: string) => {
+    const res = await api.patch(`/tournaments/${id}/status`, { status })
+    return res.data.data
+  },
 }

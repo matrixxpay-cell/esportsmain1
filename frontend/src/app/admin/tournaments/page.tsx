@@ -3,9 +3,19 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Plus, Edit2, Trash2, Eye, Trophy, Users, Calendar, RefreshCw } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye, Trophy, Users, Calendar, RefreshCw, PlayCircle, XCircle, LockKeyhole, CheckCircle2 } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import toast from 'react-hot-toast'
+
+const STATUS_TRANSITIONS: Record<string, { label: string; next: string; icon: any; color: string }[]> = {
+  upcoming:            [{ label: 'Open Reg', next: 'registration_open', icon: PlayCircle, color: 'text-green-400 hover:bg-green-400/10' }],
+  registration_open:   [{ label: 'Close Reg', next: 'registration_closed', icon: LockKeyhole, color: 'text-yellow-400 hover:bg-yellow-400/10' },
+                        { label: 'Go Live', next: 'ongoing', icon: PlayCircle, color: 'text-red-400 hover:bg-red-400/10' }],
+  registration_closed: [{ label: 'Go Live', next: 'ongoing', icon: PlayCircle, color: 'text-red-400 hover:bg-red-400/10' }],
+  ongoing:             [{ label: 'Complete', next: 'completed', icon: CheckCircle2, color: 'text-blue-400 hover:bg-blue-400/10' }],
+  completed:           [],
+  cancelled:           [],
+}
 
 const STATUS_COLOR: Record<string, string> = {
   ongoing: 'text-red-400 bg-red-400/10', registration_open: 'text-green-400 bg-green-400/10',
@@ -28,6 +38,14 @@ export default function AdminTournamentsPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await adminService.updateTournamentStatus(id, status)
+      toast.success(`Status updated to ${status.replace('_', ' ')}`)
+      setTournaments(ts => ts.map(t => t._id === id ? { ...t, status } : t))
+    } catch (e: any) { toast.error(e.message || 'Failed to update status') }
+  }
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
@@ -96,7 +114,19 @@ export default function AdminTournamentsPage() {
                     <span className="flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-saffron" /> ₹{t.prizePool?.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  {(STATUS_TRANSITIONS[t.status] || []).map(({ label, next, icon: Icon, color }) => (
+                    <button key={next} onClick={() => handleStatusChange(t._id, next)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium glass-card transition-all ${color}`}>
+                      <Icon className="w-3.5 h-3.5" /> {label}
+                    </button>
+                  ))}
+                  {t.status !== 'cancelled' && t.status !== 'completed' && (
+                    <button onClick={() => handleStatusChange(t._id, 'cancelled')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium glass-card text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all">
+                      <XCircle className="w-3.5 h-3.5" /> Cancel
+                    </button>
+                  )}
                   <Link href={`/admin/tournaments/${t._id}/view`}
                     className="p-2 rounded-xl glass-card hover:border-neon-blue/30 text-slate-400 hover:text-neon-blue transition-all">
                     <Eye className="w-4 h-4" />
