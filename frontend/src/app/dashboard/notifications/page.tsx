@@ -23,7 +23,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     api.get('/users/notifications')
       .then(res => { setNotifications(res.data.data || []); setLoading(false) })
-      .catch(() => { setNotifications(user?.notifications || []); setLoading(false) })
+      .catch(() => { setLoading(false) })
   }, [])
 
   const markAllRead = async () => {
