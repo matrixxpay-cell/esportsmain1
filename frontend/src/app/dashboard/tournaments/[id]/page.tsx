@@ -55,7 +55,7 @@ export default function TournamentDetailPage() {
       const t = await tournamentService.getTournament(id as string)
       setTournament(t)
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Registration failed')
+      toast.error(e.response?.data?.message || e.message || 'Registration failed')
     } finally {
       setRegistering(false)
     }
@@ -200,7 +200,7 @@ export default function TournamentDetailPage() {
                 {tournament.prizeDistribution.map((p: any) => (
                   <div key={p.position} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03]">
                     <span className="text-sm text-slate-300">
-                      {p.position === 1 ? '🥇' : p.position === 2 ? '🥈' : p.position === 3 ? '🥉' : `#${p.position}`} Place
+                      {Number(p.position) === 1 ? '🥇 1st' : Number(p.position) === 2 ? '🥈 2nd' : Number(p.position) === 3 ? '🥉 3rd' : `#${p.position}`} Place
                     </span>
                     <div className="text-right">
                       <div className="text-green-400 font-gaming font-bold text-sm">₹{(p.amount || 0).toLocaleString('en-IN')}</div>
