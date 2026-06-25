@@ -73,6 +73,37 @@ exports.updateTournament = async (req, res) => {
   }
 }
 
+exports.sendRoomDetails = async (req, res) => {
+  try {
+    const { roomId, roomPassword } = req.body
+    if (!roomId) return error(res, 'Room ID is required', 400)
+    const tournament = await Tournament.findById(req.params.id)
+    if (!tournament) return error(res, 'Tournament not found', 404)
+
+    // Save room details to tournament
+    tournament.roomId = roomId
+    tournament.roomPassword = roomPassword || ''
+    await tournament.save()
+
+    // Send email to each participant
+    const { sendEmail, emailTemplates } = require('../utils/email')
+    const startDate = new Date(tournament.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    let sent = 0
+    for (const p of tournament.participants) {
+      const email = p.email
+      if (!email) continue
+      try {
+        const tmpl = emailTemplates.tournamentRegistration(p.username, tournament.title, startDate, { roomId, roomPassword })
+        await sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html })
+        sent++
+      } catch (e) { /* skip failed email */ }
+    }
+    return success(res, { sent }, `Room details sent to ${sent} participants`)
+  } catch (err) {
+    return error(res, 'Failed to send room details', 500, err.message)
+  }
+}
+
 exports.updateStatus = async (req, res) => {
   try {
     const { status } = req.body
@@ -93,13 +124,22 @@ exports.registerForTournament = async (req, res) => {
     if (!tournament.isRegistrationOpen()) return error(res, 'Registration is closed for this tournament', 400)
     if (tournament.isParticipant(req.user._id)) return error(res, 'Already registered', 400)
 
+    const { inGameId, teamName, teamMembers } = req.body
+    if (!inGameId) return error(res, 'In-game ID is required', 400)
+
+    const participantData = {
+      userId: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      inGameId,
+      teamName: teamName || undefined,
+      teamMembers: teamMembers || [],
+      paymentStatus: 'paid',
+    }
+
     // For free tournaments, register directly
     if (tournament.type === 'free') {
-      tournament.participants.push({
-        userId: req.user._id,
-        username: req.user.username,
-        paymentStatus: 'paid',
-      })
+      tournament.participants.push(participantData)
       tournament.filledSlots += 1
       await tournament.save()
       return success(res, null, 'Successfully registered!')
@@ -129,9 +169,14 @@ exports.confirmPayment = async (req, res) => {
     if (expected !== razorpay_signature) return error(res, 'Payment verification failed', 400)
 
     // Add participant
+    const regData = req.session?.registrationData || {}
     tournament.participants.push({
       userId: req.user._id,
       username: req.user.username,
+      email: req.user.email,
+      inGameId: regData.inGameId,
+      teamName: regData.teamName,
+      teamMembers: regData.teamMembers || [],
       paymentStatus: 'paid',
       paymentId: razorpay_payment_id,
     })

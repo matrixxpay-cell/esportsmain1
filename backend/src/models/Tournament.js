@@ -3,8 +3,11 @@ const mongoose = require('mongoose')
 const participantSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   username: String,
+  email: String,
   avatar: String,
-  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String, isSubstitute: { type: Boolean, default: false } }],
+  inGameId: String,
+  teamName: String,
+  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String, inGameId: String, isSubstitute: { type: Boolean, default: false } }],
   joinedAt: { type: Date, default: Date.now },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'paid' },
   paymentId: String,

@@ -3,10 +3,12 @@
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Edit2, Trash2, Users, Calendar, Trophy, IndianRupee, GamepadIcon } from 'lucide-react'
+import { ArrowLeft, Edit2, Trash2, Users, Calendar, Trophy, IndianRupee, GamepadIcon, Send, Copy, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { adminService } from '@/services/adminService'
 import { useAuthStore } from '@/store/authStore'
+import api from '@/services/api'
+import toast from 'react-hot-toast'
 
 export default function AdminTournamentViewPage() {
   const { id } = useParams()
@@ -14,9 +16,18 @@ export default function AdminTournamentViewPage() {
   const { token } = useAuthStore()
   const [tournament, setTournament] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [roomId, setRoomId] = useState('')
+  const [roomPass, setRoomPass] = useState('')
+  const [sending, setSending] = useState(false)
+  const [copied, setCopied] = useState('')
 
   useEffect(() => {
-    adminService.getTournament(id as string).then(t => { setTournament(t); setLoading(false) }).catch(() => setLoading(false))
+    adminService.getTournament(id as string).then(t => {
+      setTournament(t)
+      setRoomId(t.roomId || '')
+      setRoomPass(t.roomPassword || '')
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [id])
 
   const handleDelete = async () => {
@@ -27,13 +38,41 @@ export default function AdminTournamentViewPage() {
     } catch { alert('Delete failed') }
   }
 
+  const handleSendRoomDetails = async () => {
+    if (!roomId.trim()) { toast.error('Enter Room ID first'); return }
+    setSending(true)
+    try {
+      await api.post(`/tournaments/${id}/room-details`, { roomId: roomId.trim(), roomPassword: roomPass.trim() })
+      toast.success(`Room details sent to all ${participants.length} participants!`)
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Failed to send room details')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const copyEmail = (email: string) => {
+    navigator.clipboard.writeText(email)
+    setCopied(email)
+    setTimeout(() => setCopied(''), 2000)
+  }
+
+  const copyAllEmails = () => {
+    const emails = participants.map((p: any) => p.email || p.username).join(', ')
+    navigator.clipboard.writeText(emails)
+    toast.success('All emails copied!')
+  }
+
   if (loading) return <div className="text-slate-400 text-center py-20">Loading...</div>
   if (!tournament) return (
     <div className="text-center py-20">
       <p className="text-slate-400 mb-4">Tournament not found.</p>
-      <Link href="/admin/tournaments" className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white">Back to Tournaments</Link>
+      <Link href="/admin/tournaments" className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white">Back</Link>
     </div>
   )
+
+  const participants = tournament.participants || []
+  const filled = participants.length
 
   return (
     <div>
@@ -59,13 +98,14 @@ export default function AdminTournamentViewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* Info */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6">
             <h2 className="font-semibold text-white mb-4">Tournament Info</h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               {[
                 { icon: GamepadIcon, label: 'Game', value: tournament.game },
                 { icon: Trophy, label: 'Prize Pool', value: `₹${tournament.prizePool?.toLocaleString('en-IN')}` },
-                { icon: Users, label: 'Slots', value: `${tournament.registrations?.length ?? 0} / ${tournament.maxSlots}` },
+                { icon: Users, label: 'Slots', value: `${filled} / ${tournament.maxSlots}` },
                 { icon: IndianRupee, label: 'Entry Fee', value: tournament.entryFee ? `₹${tournament.entryFee}` : 'FREE' },
                 { icon: Calendar, label: 'Start Date', value: new Date(tournament.startDate).toLocaleDateString('en-IN') },
                 { icon: Calendar, label: 'Deadline', value: new Date(tournament.registrationDeadline).toLocaleDateString('en-IN') },
@@ -79,28 +119,70 @@ export default function AdminTournamentViewPage() {
                 </div>
               ))}
             </div>
-            {tournament.description && (
-              <div className="mt-4 p-3 rounded-xl bg-white/[0.02]">
-                <div className="text-slate-500 text-xs mb-1">Description</div>
-                <p className="text-slate-300 text-sm">{tournament.description}</p>
-              </div>
-            )}
           </motion.div>
 
+          {/* Room ID Sender */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+            className="glass-card rounded-2xl p-6 border border-saffron/20">
+            <h2 className="font-semibold text-white mb-1 flex items-center gap-2">
+              <Send className="w-4 h-4 text-saffron" /> Send Room ID to Players
+            </h2>
+            <p className="text-slate-500 text-xs mb-4">Enter room details and broadcast to all {filled} registered participants via their account email</p>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Room ID *</label>
+                <input value={roomId} onChange={e => setRoomId(e.target.value)}
+                  placeholder="e.g. BGMI123456" className="input-glass text-sm" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Room Password</label>
+                <input value={roomPass} onChange={e => setRoomPass(e.target.value)}
+                  placeholder="e.g. esports123" className="input-glass text-sm" />
+              </div>
+            </div>
+            <button onClick={handleSendRoomDetails} disabled={sending || filled === 0}
+              className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50">
+              {sending ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
+              {sending ? 'Sending...' : `Send to ${filled} Players`}
+            </button>
+          </motion.div>
+
+          {/* Participants */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-2xl p-6">
-            <h2 className="font-semibold text-white mb-4">Registered Players ({tournament.registrations?.length ?? 0})</h2>
-            {tournament.registrations?.length > 0 ? (
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-white">Registered Players ({filled})</h2>
+              {filled > 0 && (
+                <button onClick={copyAllEmails}
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-neon-blue transition-colors px-3 py-1.5 rounded-lg glass-card">
+                  <Copy className="w-3.5 h-3.5" /> Copy All Emails
+                </button>
+              )}
+            </div>
+            {filled > 0 ? (
               <div className="space-y-2">
-                {tournament.registrations.map((r: any, i: number) => (
+                {participants.map((p: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] text-sm">
-                    <div className="w-8 h-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs">
-                      {r.user?.username?.[0]?.toUpperCase() ?? '#'}
+                    <div className="w-8 h-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs flex-shrink-0">
+                      {(p.username || '?')[0]?.toUpperCase()}
                     </div>
-                    <div className="flex-1">
-                      <div className="text-white font-medium">{r.user?.username ?? 'Unknown'}</div>
-                      <div className="text-slate-500 text-xs">{r.user?.email}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium flex items-center gap-2">
+                        {p.teamName ? `${p.teamName} (${p.username})` : p.username}
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                        {p.email && <span className="text-slate-500 text-xs">{p.email}</span>}
+                        {p.inGameId && <span className="text-neon-blue text-xs">ID: {p.inGameId}</span>}
+                      </div>
                     </div>
-                    <div className="text-slate-400 text-xs">{new Date(r.registeredAt).toLocaleDateString('en-IN')}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>
+                      {p.email && (
+                        <button onClick={() => copyEmail(p.email)}
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-neon-blue transition-colors">
+                          {copied === p.email ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -120,10 +202,28 @@ export default function AdminTournamentViewPage() {
               'bg-slate-400/15 text-slate-400'
             }`}>{tournament.status?.replace('_', ' ')}</span>
             <div className="mt-4 h-2 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-saffron rounded-full" style={{ width: `${Math.min(100, ((tournament.registrations?.length ?? 0) / tournament.maxSlots) * 100)}%` }} />
+              <div className="h-full bg-saffron rounded-full" style={{ width: `${Math.min(100, (filled / tournament.maxSlots) * 100)}%` }} />
             </div>
-            <p className="text-slate-500 text-xs mt-2">{tournament.registrations?.length ?? 0} / {tournament.maxSlots} slots filled</p>
+            <p className="text-slate-500 text-xs mt-2">{filled} / {tournament.maxSlots} slots filled</p>
           </motion.div>
+
+          {/* Prize Distribution */}
+          {tournament.prizeDistribution?.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card rounded-2xl p-5">
+              <h2 className="font-semibold text-white mb-3">Prize Distribution</h2>
+              <div className="space-y-2">
+                {tournament.prizeDistribution.map((p: any) => {
+                  const pos = Number(p.position)
+                  return (
+                    <div key={pos} className="flex justify-between text-sm p-2 rounded-lg bg-white/[0.02]">
+                      <span className="text-slate-300">{pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `#${pos}`} Place</span>
+                      <span className="text-green-400 font-bold">₹{(p.amount || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
