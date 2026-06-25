@@ -90,13 +90,23 @@ exports.sendRoomDetails = async (req, res) => {
     const startDate = new Date(tournament.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     let sent = 0
     for (const p of tournament.participants) {
-      const email = p.email
-      if (!email) continue
-      try {
-        const tmpl = emailTemplates.tournamentRegistration(p.username, tournament.title, startDate, { roomId, roomPassword })
-        await sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html })
-        sent++
-      } catch (e) { /* skip failed email */ }
+      // Email the team owner / solo player
+      if (p.email) {
+        try {
+          const tmpl = emailTemplates.tournamentRegistration(p.username, tournament.title, startDate, { roomId, roomPassword })
+          await sendEmail({ to: p.email, subject: tmpl.subject, html: tmpl.html })
+          sent++
+        } catch (e) { /* skip failed email */ }
+      }
+      // Email each team member individually
+      for (const member of (p.teamMembers || [])) {
+        if (!member.email) continue
+        try {
+          const tmpl = emailTemplates.tournamentRegistration(member.username || member.inGameId || 'Player', tournament.title, startDate, { roomId, roomPassword })
+          await sendEmail({ to: member.email, subject: tmpl.subject, html: tmpl.html })
+          sent++
+        } catch (e) { /* skip failed email */ }
+      }
     }
     return success(res, { sent }, `Room details sent to ${sent} participants`)
   } catch (err) {

@@ -31,22 +31,30 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   const teamSize = TEAM_SIZES[tournament.gameMode] || 1
   const [inGameId, setInGameId] = useState('')
   const [teamName, setTeamName] = useState('')
-  const [members, setMembers] = useState<string[]>(Array(teamSize - 1).fill(''))
+  const [members, setMembers] = useState<{ inGameId: string; email: string }[]>(
+    Array(teamSize - 1).fill(null).map(() => ({ inGameId: '', email: '' }))
+  )
   const [submitting, setSubmitting] = useState(false)
 
-  const updateMember = (i: number, val: string) => {
-    const next = [...members]; next[i] = val; setMembers(next)
+  const updateMember = (i: number, field: 'inGameId' | 'email', val: string) => {
+    const next = [...members]; next[i] = { ...next[i], [field]: val }; setMembers(next)
   }
 
   const handleSubmit = async () => {
     if (!inGameId.trim()) { toast.error('Enter your in-game ID'); return }
     if (isTeam && !teamName.trim()) { toast.error('Enter team name'); return }
+    if (isTeam) {
+      for (let i = 0; i < members.length; i++) {
+        if (!members[i].inGameId.trim()) { toast.error(`Enter in-game ID for Member ${i + 2}`); return }
+        if (!members[i].email.trim()) { toast.error(`Enter email for Member ${i + 2}`); return }
+      }
+    }
     setSubmitting(true)
     try {
       await api.post(`/tournaments/${tournament._id}/register`, {
         inGameId: inGameId.trim(),
         teamName: teamName.trim() || undefined,
-        teamMembers: members.filter(Boolean).map(m => ({ username: m })),
+        teamMembers: members.map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() })),
       })
       toast.success('Successfully registered! 🎉')
       onSuccess()
@@ -105,11 +113,18 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
                 <label className="block text-xs text-slate-400 mb-2">
                   Team Members ({teamSize - 1} more needed)
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {members.map((m, i) => (
-                    <input key={i} value={m} onChange={e => updateMember(i, e.target.value)}
-                      placeholder={`Member ${i + 2} in-game username`}
-                      className="input-glass text-sm" />
+                    <div key={i} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-2">
+                      <p className="text-xs text-slate-400 font-medium">Member {i + 2}</p>
+                      <input value={m.inGameId} onChange={e => updateMember(i, 'inGameId', e.target.value)}
+                        placeholder={`Member ${i + 2} in-game ID / username`}
+                        className="input-glass text-sm" />
+                      <input value={m.email} onChange={e => updateMember(i, 'email', e.target.value)}
+                        placeholder={`Member ${i + 2} email (for room details)`}
+                        type="email"
+                        className="input-glass text-sm" />
+                    </div>
                   ))}
                 </div>
               </div>
