@@ -45,8 +45,8 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     if (isTeam && !teamName.trim()) { toast.error('Enter team name'); return }
     if (isTeam) {
       for (let i = 0; i < members.length; i++) {
-        if (!members[i].inGameId.trim()) { toast.error(`Enter in-game ID for Member ${i + 2}`); return }
-        if (!members[i].email.trim()) { toast.error(`Enter email for Member ${i + 2}`); return }
+        if (!members[i].inGameId.trim()) { toast.error(`Enter in-game ID for Player ${i + 2}`); return }
+        if (!members[i].email.trim()) { toast.error(`Enter email for Player ${i + 2}`); return }
       }
     }
     setSubmitting(true)
@@ -69,8 +69,8 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="relative glass-card rounded-2xl p-6 w-full max-w-md z-10 border border-saffron/20">
-        <div className="flex items-center justify-between mb-6">
+        className="relative glass-card rounded-2xl p-6 w-full max-w-md z-10 border border-saffron/20 flex flex-col max-h-[85vh]">
+        <div className="flex items-center justify-between mb-6 flex-shrink-0">
           <div>
             <h2 className="font-gaming font-bold text-lg text-white">Register for Tournament</h2>
             <p className="text-slate-400 text-xs mt-0.5">{tournament.title}</p>
@@ -80,24 +80,19 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
           {/* Email (read-only) */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 flex items-center gap-1.5">
-              <UserCircle2 className="w-3.5 h-3.5" /> Account Email
-            </label>
+            <label className="block text-xs text-slate-400 mb-1.5">Account Email</label>
             <input value={user?.email || ''} readOnly
               className="input-glass opacity-60 cursor-not-allowed text-sm" />
-            <p className="text-xs text-slate-500 mt-1">Prize money will be credited to this account</p>
           </div>
 
           {/* In-game ID */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 flex items-center gap-1.5">
-              <Gamepad2 className="w-3.5 h-3.5" /> In-Game ID / Username *
-            </label>
+            <label className="block text-xs text-slate-400 mb-1.5">In-Game ID *</label>
             <input value={inGameId} onChange={e => setInGameId(e.target.value)}
-              placeholder={`Your ${GAMES.find(g => g.id === tournament.game)?.shortName || 'game'} username`}
+              placeholder="Your in-game ID"
               className="input-glass text-sm" />
           </div>
 
@@ -107,21 +102,21 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Team Name *</label>
                 <input value={teamName} onChange={e => setTeamName(e.target.value)}
-                  placeholder="e.g. Alpha Squad" className="input-glass text-sm" />
+                  placeholder="Team name" className="input-glass text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-2">
-                  Team Members ({teamSize - 1} more needed)
+                <label className="block text-xs text-slate-400 mb-2 font-medium">
+                  Team Players ({teamSize - 1} more)
                 </label>
                 <div className="space-y-3">
                   {members.map((m, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-2">
-                      <p className="text-xs text-slate-400 font-medium">Member {i + 2}</p>
+                    <div key={i} className="space-y-1.5">
+                      <label className="text-xs text-slate-400">Player {i + 2}</label>
                       <input value={m.inGameId} onChange={e => updateMember(i, 'inGameId', e.target.value)}
-                        placeholder={`Member ${i + 2} in-game ID / username`}
+                        placeholder="In-game ID"
                         className="input-glass text-sm" />
                       <input value={m.email} onChange={e => updateMember(i, 'email', e.target.value)}
-                        placeholder={`Member ${i + 2} email (for room details)`}
+                        placeholder="Email"
                         type="email"
                         className="input-glass text-sm" />
                     </div>
@@ -138,15 +133,15 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
               {tournament.type === 'free' ? 'FREE' : `₹${tournament.entryFee}`}
             </span>
           </div>
-
-          <button onClick={handleSubmit} disabled={submitting}
-            className="btn-primary w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60">
-            {submitting
-              ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <Trophy className="w-4 h-4" />}
-            {submitting ? 'Registering...' : 'Confirm Registration'}
-          </button>
         </div>
+
+        <button onClick={handleSubmit} disabled={submitting}
+          className="btn-primary w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 mt-4 flex-shrink-0">
+          {submitting
+            ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            : <Trophy className="w-4 h-4" />}
+          {submitting ? 'Registering...' : 'Confirm Registration'}
+        </button>
       </motion.div>
     </div>
   )
