@@ -43,18 +43,21 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   const handleSubmit = async () => {
     if (!inGameId.trim()) { toast.error('Enter your in-game ID'); return }
     if (isTeam && !teamName.trim()) { toast.error('Enter team name'); return }
-    if (isTeam) {
-      for (let i = 0; i < members.length; i++) {
-        if (!members[i].inGameId.trim()) { toast.error(`Enter in-game ID for Player ${i + 2}`); return }
-        if (!members[i].email.trim()) { toast.error(`Enter email for Player ${i + 2}`); return }
-      }
-    }
     setSubmitting(true)
     try {
+      const filledMembers = members
+        .map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() }))
+        .filter(m => m.inGameId || m.email)
+
+      for (const m of filledMembers) {
+        if (!m.inGameId) { toast.error('Each player needs an in-game ID'); setSubmitting(false); return }
+        if (!m.email) { toast.error('Each player needs an email'); setSubmitting(false); return }
+      }
+
       await api.post(`/tournaments/${tournament._id}/register`, {
         inGameId: inGameId.trim(),
         teamName: teamName.trim() || undefined,
-        teamMembers: members.map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() })),
+        teamMembers: filledMembers,
       })
       toast.success('Successfully registered! 🎉')
       onSuccess()
@@ -106,7 +109,7 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
               </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-2 font-medium">
-                  Team Players ({teamSize - 1} more)
+                  Additional Players (optional)
                 </label>
                 <div className="space-y-3">
                   {members.map((m, i) => (
