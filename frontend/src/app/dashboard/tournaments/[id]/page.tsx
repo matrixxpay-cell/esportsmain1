@@ -29,35 +29,53 @@ const TEAM_SIZES: Record<string, number> = { solo: 1, duo: 2, squad: 4, '5v5': 5
 function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   const isTeam = ['duo', 'squad', '5v5'].includes(tournament.gameMode)
   const teamSize = TEAM_SIZES[tournament.gameMode] || 1
+  const requiredPlayers = teamSize - 1
+  const maxSubs = tournament.maxSubstitutes || 0
+
   const [inGameId, setInGameId] = useState('')
   const [teamName, setTeamName] = useState('')
-  const [members, setMembers] = useState<{ inGameId: string; email: string }[]>(
-    Array(teamSize - 1).fill(null).map(() => ({ inGameId: '', email: '' }))
+  const [requiredMembers, setRequiredMembers] = useState<{ inGameId: string; email: string }[]>(
+    Array(requiredPlayers).fill(null).map(() => ({ inGameId: '', email: '' }))
+  )
+  const [subs, setSubs] = useState<{ inGameId: string; email: string }[]>(
+    Array(maxSubs).fill(null).map(() => ({ inGameId: '', email: '' }))
   )
   const [submitting, setSubmitting] = useState(false)
 
-  const updateMember = (i: number, field: 'inGameId' | 'email', val: string) => {
-    const next = [...members]; next[i] = { ...next[i], [field]: val }; setMembers(next)
+  const updateRequiredMember = (i: number, field: 'inGameId' | 'email', val: string) => {
+    const next = [...requiredMembers]; next[i] = { ...next[i], [field]: val }; setRequiredMembers(next)
+  }
+
+  const updateSub = (i: number, field: 'inGameId' | 'email', val: string) => {
+    const next = [...subs]; next[i] = { ...next[i], [field]: val }; setSubs(next)
   }
 
   const handleSubmit = async () => {
     if (!inGameId.trim()) { toast.error('Enter your in-game ID'); return }
     if (isTeam && !teamName.trim()) { toast.error('Enter team name'); return }
+
+    for (let i = 0; i < requiredMembers.length; i++) {
+      if (!requiredMembers[i].inGameId.trim()) { toast.error(`Enter in-game ID for Player ${i + 2}`); return }
+      if (!requiredMembers[i].email.trim()) { toast.error(`Enter email for Player ${i + 2}`); return }
+    }
+
+    const filledSubs = subs
+      .filter(s => s.inGameId.trim() || s.email.trim())
+
+    for (const s of filledSubs) {
+      if (!s.inGameId.trim()) { toast.error('Each sub needs an in-game ID'); return }
+      if (!s.email.trim()) { toast.error('Each sub needs an email'); return }
+    }
+
     setSubmitting(true)
     try {
-      const filledMembers = members
-        .map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() }))
-        .filter(m => m.inGameId || m.email)
-
-      for (const m of filledMembers) {
-        if (!m.inGameId) { toast.error('Each player needs an in-game ID'); setSubmitting(false); return }
-        if (!m.email) { toast.error('Each player needs an email'); setSubmitting(false); return }
-      }
-
       await api.post(`/tournaments/${tournament._id}/register`, {
         inGameId: inGameId.trim(),
         teamName: teamName.trim() || undefined,
-        teamMembers: filledMembers,
+        teamMembers: [
+          ...requiredMembers.map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() })),
+          ...filledSubs.map(s => ({ inGameId: s.inGameId.trim(), email: s.email.trim(), isSubstitute: true }))
+        ],
       })
       toast.success('Successfully registered! 🎉')
       onSuccess()
@@ -109,16 +127,16 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
               </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-2 font-medium">
-                  Additional Players (optional)
+                  Team Players ({requiredPlayers} required)
                 </label>
                 <div className="space-y-3">
-                  {members.map((m, i) => (
+                  {requiredMembers.map((m, i) => (
                     <div key={i} className="space-y-1.5">
-                      <label className="text-xs text-slate-400">Player {i + 2}</label>
-                      <input value={m.inGameId} onChange={e => updateMember(i, 'inGameId', e.target.value)}
+                      <label className="text-xs text-slate-400">Player {i + 2} *</label>
+                      <input value={m.inGameId} onChange={e => updateRequiredMember(i, 'inGameId', e.target.value)}
                         placeholder="In-game ID"
                         className="input-glass text-sm" />
-                      <input value={m.email} onChange={e => updateMember(i, 'email', e.target.value)}
+                      <input value={m.email} onChange={e => updateRequiredMember(i, 'email', e.target.value)}
                         placeholder="Email"
                         type="email"
                         className="input-glass text-sm" />
@@ -126,6 +144,27 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
                   ))}
                 </div>
               </div>
+              {maxSubs > 0 && (
+                <div>
+                  <label className="block text-xs text-slate-400 mb-2 font-medium">
+                    Substitutes (optional, max {maxSubs})
+                  </label>
+                  <div className="space-y-3">
+                    {subs.map((s, i) => (
+                      <div key={i} className="space-y-1.5">
+                        <label className="text-xs text-slate-400">Sub {i + 1}</label>
+                        <input value={s.inGameId} onChange={e => updateSub(i, 'inGameId', e.target.value)}
+                          placeholder="In-game ID"
+                          className="input-glass text-sm" />
+                        <input value={s.email} onChange={e => updateSub(i, 'email', e.target.value)}
+                          placeholder="Email"
+                          type="email"
+                          className="input-glass text-sm" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
 

@@ -7,7 +7,7 @@ const participantSchema = new mongoose.Schema({
   avatar: String,
   inGameId: String,
   teamName: String,
-  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String, inGameId: String, email: String, isSubstitute: { type: Boolean, default: false } }],
+  teamMembers: [{ userId: mongoose.Schema.Types.ObjectId, username: String, inGameId: String, email: String, isSubstitute: { type: Boolean, default: false }, joinedAt: { type: Date, default: Date.now } }],
   joinedAt: { type: Date, default: Date.now },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'paid' },
   paymentId: String,
