@@ -134,16 +134,16 @@ exports.registerForTournament = async (req, res) => {
     if (!tournament.isRegistrationOpen()) return error(res, 'Registration is closed for this tournament', 400)
     if (tournament.isParticipant(req.user._id)) return error(res, 'Already registered', 400)
 
-    const { inGameId, teamName, teamMembers } = req.body
+    const { inGameId, playerEmail, teamName, teamMembers } = req.body
     if (!inGameId) return error(res, 'In-game ID is required', 400)
 
     const participantData = {
       userId: req.user._id,
       username: req.user.username,
-      email: req.user.email,
+      email: playerEmail || req.user.email,
       inGameId,
       teamName: teamName || undefined,
-      teamMembers: teamMembers || [],
+      teamMembers: (teamMembers || []).map(m => ({ ...m, username: m.username })),
       paymentStatus: 'paid',
     }
 

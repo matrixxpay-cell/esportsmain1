@@ -29,21 +29,19 @@ const TEAM_SIZES: Record<string, number> = { solo: 1, duo: 2, squad: 4, '5v5': 5
 function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   const isTeam = ['duo', 'squad', '5v5'].includes(tournament.gameMode)
   const teamSize = TEAM_SIZES[tournament.gameMode] || 1
-  const requiredPlayers = teamSize - 1
   const maxSubs = tournament.maxSubstitutes || 0
 
-  const [inGameId, setInGameId] = useState('')
   const [teamName, setTeamName] = useState('')
-  const [requiredMembers, setRequiredMembers] = useState<{ inGameId: string; email: string }[]>(
-    Array(requiredPlayers).fill(null).map(() => ({ inGameId: '', email: '' }))
+  const [players, setPlayers] = useState<{ inGameId: string; email: string }[]>(
+    Array(teamSize).fill(null).map(() => ({ inGameId: '', email: '' }))
   )
   const [subs, setSubs] = useState<{ inGameId: string; email: string }[]>(
     Array(maxSubs).fill(null).map(() => ({ inGameId: '', email: '' }))
   )
   const [submitting, setSubmitting] = useState(false)
 
-  const updateRequiredMember = (i: number, field: 'inGameId' | 'email', val: string) => {
-    const next = [...requiredMembers]; next[i] = { ...next[i], [field]: val }; setRequiredMembers(next)
+  const updatePlayer = (i: number, field: 'inGameId' | 'email', val: string) => {
+    const next = [...players]; next[i] = { ...next[i], [field]: val }; setPlayers(next)
   }
 
   const updateSub = (i: number, field: 'inGameId' | 'email', val: string) => {
@@ -51,16 +49,14 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   }
 
   const handleSubmit = async () => {
-    if (!inGameId.trim()) { toast.error('Enter your in-game ID'); return }
     if (isTeam && !teamName.trim()) { toast.error('Enter team name'); return }
 
-    for (let i = 0; i < requiredMembers.length; i++) {
-      if (!requiredMembers[i].inGameId.trim()) { toast.error(`Enter in-game ID for Player ${i + 2}`); return }
-      if (!requiredMembers[i].email.trim()) { toast.error(`Enter email for Player ${i + 2}`); return }
+    for (let i = 0; i < players.length; i++) {
+      if (!players[i].inGameId.trim()) { toast.error(`Enter in-game ID for Player ${i + 1}`); return }
+      if (!players[i].email.trim()) { toast.error(`Enter email for Player ${i + 1}`); return }
     }
 
-    const filledSubs = subs
-      .filter(s => s.inGameId.trim() || s.email.trim())
+    const filledSubs = subs.filter(s => s.inGameId.trim() || s.email.trim())
 
     for (const s of filledSubs) {
       if (!s.inGameId.trim()) { toast.error('Each sub needs an in-game ID'); return }
@@ -70,12 +66,12 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     setSubmitting(true)
     try {
       await api.post(`/tournaments/${tournament._id}/register`, {
-        inGameId: inGameId.trim(),
+        inGameId: players[0].inGameId.trim(),
+        playerEmail: players[0].email.trim(),
         teamName: teamName.trim() || undefined,
-        teamMembers: [
-          ...requiredMembers.map(m => ({ inGameId: m.inGameId.trim(), email: m.email.trim() })),
-          ...filledSubs.map(s => ({ inGameId: s.inGameId.trim(), email: s.email.trim(), isSubstitute: true }))
-        ],
+        teamMembers: players.slice(1).map(p => ({ inGameId: p.inGameId.trim(), email: p.email.trim() })).concat(
+          filledSubs.map(s => ({ inGameId: s.inGameId.trim(), email: s.email.trim(), isSubstitute: true }))
+        ),
       })
       toast.success('Successfully registered! 🎉')
       onSuccess()
@@ -102,70 +98,64 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
         </div>
 
         <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-          {/* Email (read-only) */}
+          {/* Account Email (read-only) */}
           <div>
             <label className="block text-xs text-slate-400 mb-1.5">Account Email</label>
             <input value={user?.email || ''} readOnly
               className="input-glass opacity-60 cursor-not-allowed text-sm" />
           </div>
 
-          {/* In-game ID */}
+          {/* Team Name */}
+          {isTeam && (
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">Team Name *</label>
+              <input value={teamName} onChange={e => setTeamName(e.target.value)}
+                placeholder="Team name" className="input-glass text-sm" />
+            </div>
+          )}
+
+          {/* All Players */}
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5">In-Game ID *</label>
-            <input value={inGameId} onChange={e => setInGameId(e.target.value)}
-              placeholder="Your in-game ID"
-              className="input-glass text-sm" />
+            <label className="block text-xs text-slate-400 mb-2 font-medium">
+              {isTeam ? `Players (${teamSize})` : 'Player Details'}
+            </label>
+            <div className="space-y-3">
+              {players.map((p, i) => (
+                <div key={i} className="space-y-1.5">
+                  <label className="text-xs text-slate-400">Player {i + 1} *</label>
+                  <input value={p.inGameId} onChange={e => updatePlayer(i, 'inGameId', e.target.value)}
+                    placeholder="In-game ID"
+                    className="input-glass text-sm" />
+                  <input value={p.email} onChange={e => updatePlayer(i, 'email', e.target.value)}
+                    placeholder="Email"
+                    type="email"
+                    className="input-glass text-sm" />
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Team fields */}
-          {isTeam && (
-            <>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1.5">Team Name *</label>
-                <input value={teamName} onChange={e => setTeamName(e.target.value)}
-                  placeholder="Team name" className="input-glass text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-2 font-medium">
-                  Team Players ({requiredPlayers} required)
-                </label>
-                <div className="space-y-3">
-                  {requiredMembers.map((m, i) => (
-                    <div key={i} className="space-y-1.5">
-                      <label className="text-xs text-slate-400">Player {i + 2} *</label>
-                      <input value={m.inGameId} onChange={e => updateRequiredMember(i, 'inGameId', e.target.value)}
-                        placeholder="In-game ID"
-                        className="input-glass text-sm" />
-                      <input value={m.email} onChange={e => updateRequiredMember(i, 'email', e.target.value)}
-                        placeholder="Email"
-                        type="email"
-                        className="input-glass text-sm" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {maxSubs > 0 && (
-                <div>
-                  <label className="block text-xs text-slate-400 mb-2 font-medium">
-                    Substitutes (optional, max {maxSubs})
-                  </label>
-                  <div className="space-y-3">
-                    {subs.map((s, i) => (
-                      <div key={i} className="space-y-1.5">
-                        <label className="text-xs text-slate-400">Sub {i + 1}</label>
-                        <input value={s.inGameId} onChange={e => updateSub(i, 'inGameId', e.target.value)}
-                          placeholder="In-game ID"
-                          className="input-glass text-sm" />
-                        <input value={s.email} onChange={e => updateSub(i, 'email', e.target.value)}
-                          placeholder="Email"
-                          type="email"
-                          className="input-glass text-sm" />
-                      </div>
-                    ))}
+          {/* Substitutes */}
+          {maxSubs > 0 && (
+            <div>
+              <label className="block text-xs text-slate-400 mb-2 font-medium">
+                Substitutes (optional, max {maxSubs})
+              </label>
+              <div className="space-y-3">
+                {subs.map((s, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <label className="text-xs text-slate-400">Sub {i + 1}</label>
+                    <input value={s.inGameId} onChange={e => updateSub(i, 'inGameId', e.target.value)}
+                      placeholder="In-game ID"
+                      className="input-glass text-sm" />
+                    <input value={s.email} onChange={e => updateSub(i, 'email', e.target.value)}
+                      placeholder="Email"
+                      type="email"
+                      className="input-glass text-sm" />
                   </div>
-                </div>
-              )}
-            </>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Entry fee info */}
