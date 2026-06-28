@@ -40,10 +40,13 @@ export default function NotificationsPage() {
 
   return (
     <div className="pb-20 lg:pb-0 max-w-2xl">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between page-header">
         <div>
-          <h1 className="gaming-heading text-2xl sm:text-3xl mb-2">Notifications</h1>
-          <p className="text-slate-400">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}</p>
+          <h1 className="gaming-heading flex items-center gap-2">
+            <Bell className="w-7 h-7 text-saffron" />
+            Notifications
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}</p>
         </div>
         {unreadCount > 0 && (
           <button onClick={markAllRead}
@@ -58,9 +61,12 @@ export default function NotificationsPage() {
           {[...Array(4)].map((_, i) => <div key={i} className="h-20 glass-card rounded-xl animate-pulse" />)}
         </div>
       ) : notifications.length === 0 ? (
-        <div className="text-center py-16 text-slate-500">
-          <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p>No notifications yet</p>
+        <div className="empty-state">
+          <div className="empty-icon">
+            <Bell className="w-8 h-8 text-saffron/40" />
+          </div>
+          <p className="text-slate-400 font-medium mb-1">No notifications yet</p>
+          <p className="text-slate-500 text-xs">You&apos;ll see tournament updates and alerts here</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -70,7 +76,7 @@ export default function NotificationsPage() {
             return (
               <motion.div key={n._id || i}
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 }}
-                className={`glass-card rounded-xl p-4 flex gap-3 ${!n.isRead ? 'border-neon-blue/20' : ''}`}>
+                className={`stat-card-v2 p-4 flex gap-3 ${!n.isRead ? '!border-saffron/15' : ''}`}>
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
                   <Icon className="w-4 h-4" />
                 </div>

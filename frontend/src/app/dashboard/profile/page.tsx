@@ -50,16 +50,19 @@ export default function ProfilePage() {
 
   return (
     <div className="pb-20 lg:pb-0 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="gaming-heading text-2xl sm:text-3xl mb-2">My Profile</h1>
-        <p className="text-slate-400">Your gamer identity</p>
+      <div className="page-header">
+        <h1 className="gaming-heading flex items-center gap-2">
+          <User className="w-7 h-7 text-saffron" />
+          My Profile
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">Your gamer identity</p>
       </div>
 
       {/* Profile Card */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6 mb-6">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="stat-card-v2 p-6 mb-6">
         <div className="flex items-start gap-5">
-          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0 shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)' }}>
             {user?.username?.[0]?.toUpperCase()}
           </div>
           <div className="flex-1">
@@ -125,7 +128,7 @@ export default function ProfilePage() {
           { label: 'Win Rate', value: `${winRate}%`, icon: TrendingUp, color: 'text-neon-purple' },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="glass-card rounded-xl p-4 text-center">
+            className="stat-card-v2 p-4 text-center">
             <s.icon className={`w-5 h-5 ${s.color} mx-auto mb-2`} />
             <div className={`font-gaming font-bold text-lg ${s.color}`}>{s.value}</div>
             <div className="text-slate-500 text-xs">{s.label}</div>

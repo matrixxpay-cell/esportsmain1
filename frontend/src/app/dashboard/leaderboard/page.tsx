@@ -1,112 +1,158 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, TrendingUp, Flame } from 'lucide-react'
+import { Trophy, TrendingUp, Crown, Medal, BarChart2 } from 'lucide-react'
 import { GAMES } from '@/constants/games'
-
-const MOCK_LEADERS = Array.from({ length: 20 }, (_, i) => ({
-  rank: i + 1,
-  username: ['ProKillerXD', 'ValorantGod_IN', 'HeadshotHero', 'BooyahKing99', 'MLBBMaster', 'Dota2Legend', 'FootballPro', 'SniperElite', 'RushMaster', 'ClutchKing', 'FragGod', 'AWPLegend', 'RiflerPro', 'SwiftPlayer', 'AimBot420', 'TacticalGenius', 'GrenadeKing', 'FlankMaster', 'RushBuster', 'IronSight'][i],
-  avatar: null,
-  game: ['BGMI', 'Valorant', 'CS:GO', 'Free Fire', 'MLBB', 'Dota 2', 'eFootball', 'BGMI', 'Valorant', 'CS:GO', 'Free Fire', 'MLBB', 'Dota 2', 'eFootball', 'BGMI', 'Valorant', 'CS:GO', 'Free Fire', 'MLBB', 'Dota 2'][i],
-  points: Math.round(12480 - i * 580 + Math.random() * 100),
-  wins: Math.round(47 - i * 2.1 + Math.random() * 3),
-  earnings: (2300000 - i * 100000),
-  state: ['Maharashtra', 'Karnataka', 'Delhi', 'Tamil Nadu', 'Gujarat', 'UP', 'Bihar', 'Rajasthan', 'MP', 'Punjab', 'Haryana', 'AP', 'Kerala', 'Odisha', 'Assam', 'West Bengal', 'Goa', 'Jharkhand', 'Chhattisgarh', 'HP'][i],
-}))
+import { tournamentService } from '@/services/tournamentService'
 
 export default function LeaderboardPage() {
   const [gameFilter, setGameFilter] = useState('all')
+  const [leaders, setLeaders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filtered = gameFilter === 'all' ? MOCK_LEADERS
-    : MOCK_LEADERS.filter(p => p.game.toLowerCase().includes(gameFilter.toLowerCase()))
+  useEffect(() => {
+    tournamentService.getLeaderboard()
+      .then(data => { setLeaders(data || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const filtered = gameFilter === 'all' ? leaders
+    : leaders.filter((p: any) => p.game?.toLowerCase().includes(gameFilter.toLowerCase()))
+
+  const top3 = filtered.slice(0, 3)
+  const rest = filtered.slice(3)
 
   return (
     <div className="pb-20 lg:pb-0">
-      <div className="mb-8">
-        <h1 className="gaming-heading text-2xl sm:text-3xl mb-2">Global Leaderboard</h1>
-        <p className="text-slate-400">India&apos;s top esports players</p>
+      <div className="page-header">
+        <h1 className="gaming-heading flex items-center gap-2">
+          <BarChart2 className="w-7 h-7 text-saffron" />
+          Leaderboard
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">India&apos;s top esports players ranked by performance</p>
       </div>
 
       {/* Podium */}
-      <div className="flex items-end justify-center gap-4 mb-10">
-        {[MOCK_LEADERS[1], MOCK_LEADERS[0], MOCK_LEADERS[2]].map((player, i) => {
-          const heights = ['h-28', 'h-36', 'h-24']
-          const badges = ['🥈', '🥇', '🥉']
-          const colors = ['text-slate-300', 'text-yellow-400', 'text-amber-500']
-          const idx = i === 0 ? 1 : i === 1 ? 0 : 2
-          return (
-            <motion.div key={player.username}
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-              className={`glass-card rounded-t-2xl ${heights[i]} w-28 sm:w-36 flex flex-col items-center justify-end pb-4 border ${
-                i === 1 ? 'border-yellow-400/30' : 'border-white/[0.08]'
-              }`}>
-              <span className="text-2xl mb-2">{badges[i]}</span>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white mb-2"
-                style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
-                {player.username[0]}
-              </div>
-              <div className={`font-gaming font-bold text-xs ${colors[i]} text-center truncate px-2 w-full`}>{player.username}</div>
-              <div className="text-slate-400 text-xs mt-0.5">{player.points.toLocaleString('en-IN')} pts</div>
-            </motion.div>
-          )
-        })}
-      </div>
+      {!loading && top3.length >= 3 && (
+        <div className="flex items-end justify-center gap-3 sm:gap-5 mb-10 px-4">
+          {[top3[1], top3[0], top3[2]].map((player, i) => {
+            const heights = ['h-32', 'h-40', 'h-28']
+            const badges = ['🥈', '🥇', '🥉']
+            const glows = [
+              'rgba(192,192,192,0.08)',
+              'rgba(255,215,0,0.1)',
+              'rgba(205,127,50,0.08)',
+            ]
+            const borderColors = [
+              'rgba(192,192,192,0.2)',
+              'rgba(255,215,0,0.25)',
+              'rgba(205,127,50,0.15)',
+            ]
+            return (
+              <motion.div key={player.username || i}
+                initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.1 }}
+                className={`rounded-t-2xl ${heights[i]} w-28 sm:w-36 flex flex-col items-center justify-end pb-4 relative`}
+                style={{
+                  background: glows[i],
+                  border: `1px solid ${borderColors[i]}`,
+                  borderBottom: 'none',
+                }}>
+                <span className="text-3xl mb-2">{badges[i]}</span>
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white mb-2 shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)' }}>
+                  {player.username?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div className="font-gaming font-bold text-xs text-white text-center truncate px-2 w-full">
+                  {player.username}
+                </div>
+                <div className="text-slate-500 text-xs mt-0.5 font-gaming">
+                  {(player.points ?? 0).toLocaleString('en-IN')} pts
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
 
-      {/* Filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
+      {/* Game Filter Chips */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
         <button onClick={() => setGameFilter('all')}
-          className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${gameFilter === 'all' ? 'bg-neon-blue/20 text-neon-blue border border-neon-blue/30' : 'glass-card text-slate-400 hover:text-white'}`}>
+          className={`filter-chip ${gameFilter === 'all' ? 'active' : ''}`}>
           All Games
         </button>
         {GAMES.map(g => (
           <button key={g.id} onClick={() => setGameFilter(g.shortName)}
-            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${gameFilter === g.shortName ? 'text-white border' : 'glass-card text-slate-400 hover:text-white'}`}
-            style={gameFilter === g.shortName ? { color: g.color, borderColor: g.color + '50', background: g.color + '15' } : {}}>
+            className={`filter-chip ${gameFilter === g.shortName ? 'active' : ''}`}
+            style={gameFilter === g.shortName ? { color: g.color, borderColor: g.color + '40', background: g.color + '10' } : {}}>
             {g.shortName}
           </button>
         ))}
       </div>
 
-      {/* Table */}
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="grid grid-cols-12 px-5 py-3 text-xs text-slate-500 uppercase tracking-wider border-b border-white/[0.06]">
+      {/* Leaderboard Table */}
+      <div className="stat-card-v2 !p-0 overflow-hidden">
+        <div className="grid grid-cols-12 px-5 py-3 text-[11px] text-slate-500 uppercase tracking-wider border-b border-white/[0.06] font-medium">
           <div className="col-span-1">#</div>
           <div className="col-span-4">Player</div>
           <div className="col-span-2 hidden sm:block">Game</div>
           <div className="col-span-2">Points</div>
-          <div className="col-span-2 hidden md:block">Wins</div>
+          <div className="col-span-2 hidden md:block text-center">Wins</div>
           <div className="col-span-3 md:col-span-1 text-right">Earnings</div>
         </div>
-        {filtered.map((player, i) => (
-          <motion.div key={player.username}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-            className={`grid grid-cols-12 px-5 py-3.5 items-center border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${i < 3 ? 'bg-yellow-400/[0.02]' : ''}`}>
-            <div className="col-span-1">
-              {i < 3 ? ['🥇', '🥈', '🥉'][i] : <span className="text-slate-500 text-sm">{player.rank}</span>}
-            </div>
-            <div className="col-span-4 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                style={{ background: 'linear-gradient(135deg, #00D9FF, #7C3AED)' }}>
-                {player.username[0]}
+
+        {loading ? (
+          <div className="space-y-0">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="grid grid-cols-12 px-5 py-4 items-center border-b border-white/[0.03]">
+                <div className="col-span-1"><div className="w-5 h-5 bg-white/[0.04] rounded animate-pulse" /></div>
+                <div className="col-span-4 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-white/[0.04] rounded-lg animate-pulse" />
+                  <div className="w-20 h-4 bg-white/[0.04] rounded animate-pulse" />
+                </div>
+                <div className="col-span-2 hidden sm:block"><div className="w-12 h-4 bg-white/[0.04] rounded animate-pulse" /></div>
+                <div className="col-span-2"><div className="w-14 h-4 bg-white/[0.04] rounded animate-pulse" /></div>
+                <div className="col-span-2 hidden md:block"><div className="w-8 h-4 bg-white/[0.04] rounded animate-pulse mx-auto" /></div>
+                <div className="col-span-1"><div className="w-12 h-4 bg-white/[0.04] rounded animate-pulse ml-auto" /></div>
               </div>
-              <div className="min-w-0">
-                <div className="text-sm text-white font-medium truncate">{player.username}</div>
-                <div className="text-xs text-slate-500 hidden sm:block">{player.state}</div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="empty-state !py-16">
+            <div className="empty-icon">
+              <Trophy className="w-8 h-8 text-saffron/40" />
+            </div>
+            <p>No players on the leaderboard yet</p>
+          </div>
+        ) : (
+          rest.map((player, i) => (
+            <motion.div key={player.userId || player.username || i}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+              className={`grid grid-cols-12 px-5 py-3.5 items-center border-b border-white/[0.03] hover:bg-white/[0.015] transition-colors`}>
+              <div className="col-span-1">
+                <span className="text-slate-600 text-sm font-gaming">{i + 4}</span>
               </div>
-            </div>
-            <div className="col-span-2 hidden sm:block text-xs text-slate-400">{player.game}</div>
-            <div className="col-span-2 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-neon-blue hidden sm:block" />
-              <span className="font-gaming font-bold text-neon-blue text-sm">{player.points.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="col-span-2 hidden md:block text-slate-300 text-sm text-center">{player.wins}</div>
-            <div className="col-span-3 md:col-span-1 text-right text-green-400 text-sm font-medium">
-              ₹{(player.earnings / 100).toFixed(0)}K
-            </div>
-          </motion.div>
-        ))}
+              <div className="col-span-4 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, rgba(255,107,43,0.3), rgba(245,158,11,0.3))' }}>
+                  {player.username?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm text-white font-medium truncate">{player.username}</div>
+                </div>
+              </div>
+              <div className="col-span-2 hidden sm:block text-xs text-slate-500">{player.game || '-'}</div>
+              <div className="col-span-2">
+                <span className="font-gaming font-bold text-saffron text-sm">{(player.points ?? 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="col-span-2 hidden md:block text-slate-400 text-sm text-center">{player.tournamentsWon ?? 0}</div>
+              <div className="col-span-3 md:col-span-1 text-right text-emerald-400 text-sm font-medium">
+                ₹{((player.totalEarnings ?? 0) / 100).toFixed(0)}K
+              </div>
+            </motion.div>
+          ))
+        )}
       </div>
     </div>
   )

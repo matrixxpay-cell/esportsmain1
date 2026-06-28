@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wallet, ArrowDownLeft, ArrowUpRight, IndianRupee, Plus, Minus, TrendingUp, Gift, Clock } from 'lucide-react'
+import { Wallet, ArrowDownLeft, ArrowUpRight, IndianRupee, Plus, Minus, TrendingUp, Gift, Clock, Shield } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { walletService } from '@/services/walletService'
 import toast from 'react-hot-toast'
@@ -11,6 +11,7 @@ const TX_ICON: Record<string, any> = {
   prize: TrendingUp, deposit: ArrowDownLeft, entry_fee: ArrowUpRight,
   withdrawal: ArrowUpRight, refund: ArrowDownLeft, referral: Gift, bonus: Gift,
 }
+const TX_CREDIT_TYPES = ['deposit', 'prize', 'referral', 'bonus', 'refund']
 
 export default function WalletPage() {
   const { user } = useAuthStore()
@@ -46,7 +47,6 @@ export default function WalletPage() {
     try {
       const order = await walletService.createDepositOrder(amount)
       toast.success('Redirecting to payment gateway...')
-      // Razorpay integration would open here
     } catch (e: any) {
       toast.error(e.message || 'Failed to create order')
     } finally {
@@ -74,120 +74,183 @@ export default function WalletPage() {
     }
   }
 
+  const statCards = [
+    { label: 'Available Balance', value: balance, color: '#FF6B2B', icon: Wallet, prefix: '₹' },
+    { label: 'Bonus Balance', value: bonusBalance, color: '#10B981', icon: Gift, prefix: '₹' },
+    { label: 'Total Deposited', value: totalDeposited, color: '#60A5FA', icon: ArrowDownLeft, prefix: '₹' },
+    { label: 'Total Won', value: totalWon, color: '#F59E0B', icon: TrendingUp, prefix: '₹' },
+  ]
+
   return (
     <div className="pb-20 lg:pb-0">
-      <div className="mb-8">
-        <h1 className="gaming-heading text-2xl sm:text-3xl mb-2">My Wallet</h1>
-        <p className="text-slate-400">Manage your funds and view transaction history</p>
+      <div className="page-header">
+        <h1 className="gaming-heading flex items-center gap-2">
+          <Wallet className="w-7 h-7 text-saffron" />
+          My Wallet
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">Manage your funds and view transactions</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Available Balance', value: `₹${balance.toLocaleString('en-IN')}`, color: 'text-neon-blue', icon: Wallet, bg: 'bg-neon-blue/10' },
-          { label: 'Bonus Balance', value: `₹${bonusBalance.toLocaleString('en-IN')}`, color: 'text-green-400', icon: Gift, bg: 'bg-green-400/10' },
-          { label: 'Total Deposited', value: `₹${totalDeposited.toLocaleString('en-IN')}`, color: 'text-slate-300', icon: ArrowDownLeft, bg: 'bg-white/5' },
-          { label: 'Total Won', value: `₹${totalWon.toLocaleString('en-IN')}`, color: 'text-yellow-400', icon: TrendingUp, bg: 'bg-yellow-400/10' },
-        ].map(({ label, value, color, icon: Icon, bg }, i) => (
-          <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-            className="glass-card rounded-2xl p-5">
-            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
-              <Icon className={`w-5 h-5 ${color}`} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        {statCards.map(({ label, value, color, icon: Icon, prefix }, i) => (
+          <motion.div key={label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="stat-card-v2 group">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                style={{ background: `${color}12`, border: `1px solid ${color}20` }}>
+                <Icon className="w-4 h-4" style={{ color }} />
+              </div>
             </div>
-            {loading ? <div className="h-6 w-20 bg-white/10 rounded animate-pulse mb-1" /> :
-              <div className={`font-gaming font-bold text-xl ${color}`}>{value}</div>}
-            <div className="text-slate-400 text-xs mt-1">{label}</div>
+            {loading ? (
+              <div className="h-7 w-24 bg-white/[0.06] rounded animate-pulse mb-1" />
+            ) : (
+              <div className="font-gaming font-bold text-xl sm:text-2xl" style={{ color }}>
+                {prefix}{value.toLocaleString('en-IN')}
+              </div>
+            )}
+            <div className="text-slate-500 text-xs mt-1">{label}</div>
           </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
-          <div className="flex rounded-xl overflow-hidden mb-6 bg-white/[0.04]">
-            <button onClick={() => setActiveTab('deposit')}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${activeTab === 'deposit' ? 'bg-neon-blue/20 text-neon-blue' : 'text-slate-400'}`}>
-              <Plus className="w-4 h-4 inline mr-1.5" />Deposit
-            </button>
-            <button onClick={() => setActiveTab('withdraw')}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${activeTab === 'withdraw' ? 'bg-red-500/20 text-red-400' : 'text-slate-400'}`}>
-              <Minus className="w-4 h-4 inline mr-1.5" />Withdraw
-            </button>
+        {/* Deposit / Withdraw Panel */}
+        <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
+          className="lg:col-span-2 stat-card-v2 !p-0 overflow-hidden">
+
+          {/* Tabs */}
+          <div className="flex border-b border-white/[0.06]">
+            {(['deposit', 'withdraw'] as const).map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-3.5 text-sm font-semibold transition-all relative ${
+                  activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                }`}>
+                <span className="flex items-center justify-center gap-1.5">
+                  {tab === 'deposit' ? <Plus className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                  {tab === 'deposit' ? 'Deposit' : 'Withdraw'}
+                </span>
+                {activeTab === tab && (
+                  <motion.div layoutId="wallet-tab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5"
+                    style={{ background: tab === 'deposit' ? '#FF6B2B' : '#EF4444' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+                )}
+              </button>
+            ))}
           </div>
 
-          {activeTab === 'deposit' ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">Amount (₹)</label>
-                <input value={depositAmount} onChange={e => setDepositAmount(e.target.value)} type="number"
-                  placeholder="Enter amount (min ₹10)" className="input-glass" />
+          <div className="p-5">
+            {activeTab === 'deposit' ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Amount (₹)</label>
+                  <input value={depositAmount} onChange={e => setDepositAmount(e.target.value)} type="number"
+                    placeholder="Enter amount (min ₹10)" className="input-glass py-3" />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[100, 250, 500].map(amount => (
+                    <button key={amount} onClick={() => setDepositAmount(String(amount))}
+                      className="py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-saffron transition-all"
+                      style={{ background: 'rgba(255,107,43,0.06)', border: '1px solid rgba(255,107,43,0.12)' }}>
+                      ₹{amount}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={handleDeposit} disabled={submitting}
+                  className="btn-primary w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+                  {submitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <IndianRupee className="w-4 h-4" />}
+                  Add Money
+                </button>
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-600">
+                  <Shield className="w-3 h-3" />
+                  Secured via Razorpay • UPI • Net Banking
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {[100, 250, 500].map(amount => (
-                  <button key={amount} onClick={() => setDepositAmount(String(amount))}
-                    className="btn-ghost py-2 rounded-lg text-sm text-slate-300 hover:text-neon-blue">₹{amount}</button>
-                ))}
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">UPI ID</label>
+                  <input value={upiId} onChange={e => setUpiId(e.target.value)} type="text"
+                    placeholder="yourname@upi" className="input-glass py-3" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Amount (₹)</label>
+                  <input value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} type="number"
+                    placeholder="Min ₹100" className="input-glass py-3" />
+                </div>
+                <div className="rounded-xl p-3 text-xs text-slate-400 flex items-center justify-between"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span>Available</span>
+                  <span className="text-white font-gaming font-bold">₹{balance.toLocaleString('en-IN')}</span>
+                </div>
+                <button onClick={handleWithdraw} disabled={submitting}
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+                  style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                  {submitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
+                  Withdraw
+                </button>
+                <p className="text-xs text-slate-600 text-center">Processed within 24 hours</p>
               </div>
-              <button onClick={handleDeposit} disabled={submitting}
-                className="btn-neon w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60">
-                <IndianRupee className="w-4 h-4" /> Add Money
-              </button>
-              <p className="text-xs text-slate-500 text-center">Secured via Razorpay • UPI • Net Banking</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">UPI ID</label>
-                <input value={upiId} onChange={e => setUpiId(e.target.value)} type="text"
-                  placeholder="yourname@upi" className="input-glass" />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">Amount (₹)</label>
-                <input value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} type="number"
-                  placeholder="Min ₹100" className="input-glass" />
-              </div>
-              <div className="glass-card-light rounded-lg p-3 text-xs text-slate-400">
-                Available: <span className="text-white font-semibold">₹{balance.toLocaleString('en-IN')}</span> • Processed within 24 hours
-              </div>
-              <button onClick={handleWithdraw} disabled={submitting}
-                className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-all disabled:opacity-60">
-                <ArrowUpRight className="w-4 h-4" /> Withdraw
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </motion.div>
 
-        <div className="lg:col-span-3 glass-card rounded-2xl p-6">
-          <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-neon-blue" /> Transaction History
-          </h2>
-          {loading ? (
-            <div className="space-y-2">
-              {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-white/[0.03] rounded-xl animate-pulse" />)}
-            </div>
-          ) : transactions.length === 0 ? (
-            <p className="text-slate-500 text-sm text-center py-10">No transactions yet.</p>
-          ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {transactions.map((tx: any) => {
-                const Icon = TX_ICON[tx.type] || IndianRupee
-                const isCredit = tx.amount > 0
-                return (
-                  <div key={tx._id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.03] transition-colors">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isCredit ? 'bg-green-400/10' : 'bg-red-400/10'}`}>
-                      <Icon className={`w-4 h-4 ${isCredit ? 'text-green-400' : 'text-red-400'}`} />
+        {/* Transaction History */}
+        <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+          className="lg:col-span-3 stat-card-v2 !p-0 overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/[0.06] flex items-center gap-2">
+            <Clock className="w-4 h-4 text-saffron" />
+            <h2 className="font-semibold text-white text-sm">Transaction History</h2>
+            <span className="text-xs text-slate-500 ml-auto">{transactions.length} transactions</span>
+          </div>
+
+          <div className="p-2">
+            {loading ? (
+              <div className="space-y-1 p-3">
+                {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-white/[0.03] rounded-xl animate-pulse" />)}
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="empty-state !py-12">
+                <div className="empty-icon !w-12 !h-12">
+                  <Clock className="w-5 h-5 text-saffron/40" />
+                </div>
+                <p>No transactions yet</p>
+              </div>
+            ) : (
+              <div className="space-y-0.5 max-h-[420px] overflow-y-auto">
+                {transactions.map((tx: any) => {
+                  const Icon = TX_ICON[tx.type] || IndianRupee
+                  const isCredit = TX_CREDIT_TYPES.includes(tx.type) || tx.amount > 0
+                  return (
+                    <div key={tx._id} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/[0.02] transition-colors">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0`}
+                        style={{
+                          background: isCredit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                          border: `1px solid ${isCredit ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                        }}>
+                        <Icon className={`w-4 h-4 ${isCredit ? 'text-emerald-400' : 'text-red-400'}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-white truncate">{tx.description}</div>
+                        <div className="text-xs text-slate-600">
+                          {new Date(tx.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {tx.status === 'pending' && <span className="ml-2 text-yellow-500">• Pending</span>}
+                        </div>
+                      </div>
+                      <div className={`font-gaming font-bold text-sm flex-shrink-0 ${isCredit ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {isCredit ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-white truncate">{tx.description}</div>
-                      <div className="text-xs text-slate-500">{new Date(tx.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                    </div>
-                    <div className={`font-gaming font-bold text-sm flex-shrink-0 ${isCredit ? 'text-green-400' : 'text-red-400'}`}>
-                      {isCredit ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   )
