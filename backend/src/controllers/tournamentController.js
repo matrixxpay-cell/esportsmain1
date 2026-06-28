@@ -574,24 +574,22 @@ exports.demoFill = async (req, res) => {
   try {
     const tournament = await Tournament.findById(req.params.id)
     if (!tournament) return error(res, 'Tournament not found', 404)
-    if (tournament.participants.length > 0) return error(res, 'Tournament already has participants', 400)
-
     const { count } = req.body
-    if (!count || count < 2) return error(res, 'Count must be at least 2', 400)
+    if (!count || count < 1) return error(res, 'Count must be at least 1', 400)
 
-    const participants = []
+    const existing = tournament.participants.length
     for (let i = 1; i <= count; i++) {
-      participants.push({
+      tournament.participants.push({
         userId: new mongoose.Types.ObjectId(),
-        username: `Demo Team ${i}`,
-        teamName: `Demo Team ${i}`,
-        inGameId: `demo_${i}`,
+        username: `Demo Team ${existing + i}`,
+        teamName: `Demo Team ${existing + i}`,
+        inGameId: `demo_${existing + i}`,
+        email: `demo${existing + i}@test.com`,
         paymentStatus: 'paid',
       })
     }
 
-    tournament.participants = participants
-    tournament.filledSlots = count
+    tournament.filledSlots = tournament.participants.length
     await tournament.save()
 
     return success(res, tournament.participants, `Added ${count} demo teams`)

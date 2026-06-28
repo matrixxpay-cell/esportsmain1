@@ -162,14 +162,14 @@ export default function BracketsPage() {
                 <input type="number" value={demoCount} onChange={e => setDemoCount(parseInt(e.target.value) || 2)}
                   min={2} max={128} className="input-glass text-sm" />
               </div>
-              <button onClick={handleDemoFill} disabled={hasParticipants}
-                className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 whitespace-nowrap">
-                Fill Demo Teams
+              <button onClick={handleDemoFill}
+                className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white whitespace-nowrap">
+                {hasParticipants ? `Add ${demoCount} Demo Teams` : 'Fill Demo Teams'}
               </button>
             </div>
             {hasParticipants && (
-              <p className="text-yellow-400 text-xs mt-3">
-                ⚠️ Tournament already has {participants.length} participants registered
+              <p className="text-slate-400 text-xs mt-3">
+                {participants.length} participants already registered. Demo teams will be added alongside them.
               </p>
             )}
           </motion.div>
