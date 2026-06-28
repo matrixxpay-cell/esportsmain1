@@ -175,7 +175,7 @@ export default function AdminTournamentViewPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>
+                      {p.joinedAt && <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>}
                       {p.email && (
                         <button onClick={() => copyEmail(p.email)}
                           className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-neon-blue transition-colors">
