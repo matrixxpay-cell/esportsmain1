@@ -95,4 +95,29 @@ export const adminService = {
     const res = await api.post(`/tournaments/${id}/brackets/${matchNumber}/room`, { roomId, roomPassword })
     return res.data
   },
+
+  getContentGames: async () => {
+    const res = await api.get('/admin/content/games')
+    return res.data.data
+  },
+  updateContentGames: async (games: any[]) => {
+    const res = await api.put('/admin/content/games', { games })
+    return res.data.data
+  },
+  getContentSponsors: async () => {
+    const res = await api.get('/admin/content/sponsors')
+    return res.data.data
+  },
+  updateContentSponsors: async (sponsors: any[]) => {
+    const res = await api.put('/admin/content/sponsors', { sponsors })
+    return res.data.data
+  },
+  getContentReviews: async () => {
+    const res = await api.get('/admin/content/reviews')
+    return res.data.data
+  },
+  updateContentReviews: async (reviews: any[]) => {
+    const res = await api.put('/admin/content/reviews', { reviews })
+    return res.data.data
+  },
 }

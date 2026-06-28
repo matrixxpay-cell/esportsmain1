@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Megaphone, Bell, FileText, Image, ArrowRight } from 'lucide-react'
+import { Megaphone, Gamepad2, FileText, Image, Users, Star, ArrowRight } from 'lucide-react'
 
 export default function AdminContentPage() {
   const items = [
     { icon: Megaphone, title: 'Announcements', desc: 'Post platform-wide announcements and news to all users.', color: 'text-saffron', bg: 'bg-orange-400/10', href: '/admin/content/announcements' },
-    { icon: Bell, title: 'Push Notifications', desc: 'Send targeted notifications to players about tournaments and updates.', color: 'text-neon-blue', bg: 'bg-neon-blue/10', badge: 'Coming Soon' },
+    { icon: Gamepad2, title: 'Games Display', desc: 'Configure which games appear on homepage, their order, and images.', color: 'text-neon-blue', bg: 'bg-neon-blue/10', href: '/admin/content/games' },
     { icon: Image, title: 'Banner Management', desc: 'Upload and manage homepage banners and promotional images.', color: 'text-green-400', bg: 'bg-green-400/10', href: '/admin/content/banners' },
-    { icon: FileText, title: 'Static Pages', desc: 'Edit Terms of Service, Privacy Policy, and FAQ content.', color: 'text-neon-purple', bg: 'bg-purple-400/10', badge: 'Coming Soon' },
+    { icon: Users, title: 'Sponsors & Partners', desc: 'Manage sponsor logos and partner links on homepage.', color: 'text-yellow-400', bg: 'bg-yellow-400/10', href: '/admin/content/sponsors' },
+    { icon: Star, title: 'Player Reviews', desc: 'Manage player testimonials and reviews shown on homepage.', color: 'text-neon-purple', bg: 'bg-purple-400/10', href: '/admin/content/reviews' },
+    { icon: FileText, title: 'Static Pages', desc: 'Edit Terms of Service, Privacy Policy, and FAQ content.', color: 'text-slate-400', bg: 'bg-slate-400/10', badge: 'Coming Soon' },
   ]
 
   return (

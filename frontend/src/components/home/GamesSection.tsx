@@ -1,11 +1,37 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { GAMES } from '@/constants/games'
+import api from '@/services/api'
+
+interface GameDisplay {
+  id: string
+  imageUrl?: string
+  visible: boolean
+  order: number
+}
 
 export default function GamesSection() {
+  const [displayGames, setDisplayGames] = useState(GAMES)
+
+  useEffect(() => {
+    api.get('/content/games').then(res => {
+      const config: GameDisplay[] = res.data?.data
+      if (config && config.length > 0) {
+        const visible = config.filter(g => g.visible).sort((a, b) => a.order - b.order)
+        const merged = visible.map(gc => {
+          const base = GAMES.find(g => g.id === gc.id)
+          if (!base) return null
+          return { ...base, imageUrl: gc.imageUrl }
+        }).filter(Boolean) as (typeof GAMES[0] & { imageUrl?: string })[]
+        if (merged.length > 0) setDisplayGames(merged)
+      }
+    }).catch(() => {})
+  }, [])
+
   return (
     <section className="py-20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +49,7 @@ export default function GamesSection() {
         </motion.div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-          {GAMES.map((game, i) => (
+          {displayGames.map((game: any, i: number) => (
             <motion.div
               key={game.id}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -33,13 +59,17 @@ export default function GamesSection() {
             >
               <Link href={`/dashboard/tournaments?game=${game.id}`}
                 className="group block glass-card rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300"
-                style={{ borderColor: `rgba(${game.color.slice(1).match(/.{2}/g)?.map(h => parseInt(h, 16)).join(',')}, 0.2)` }}
+                style={{ borderColor: `rgba(${game.color.slice(1).match(/.{2}/g)?.map((h: string) => parseInt(h, 16)).join(',')}, 0.2)` }}
               >
                 <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 flex items-center justify-center"
-                  style={{ background: game.glowColor }}>
-                  <span className="font-gaming font-black text-2xl" style={{ color: game.color }}>
-                    {game.shortName[0]}
-                  </span>
+                  style={{ background: game.imageUrl ? undefined : game.glowColor }}>
+                  {game.imageUrl ? (
+                    <img src={game.imageUrl} alt={game.shortName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-gaming font-black text-2xl" style={{ color: game.color }}>
+                      {game.shortName[0]}
+                    </span>
+                  )}
                 </div>
                 <div className="font-gaming font-bold text-xs" style={{ color: game.color }}>{game.shortName}</div>
                 <div className="text-slate-500 text-xs mt-0.5">{game.genre}</div>

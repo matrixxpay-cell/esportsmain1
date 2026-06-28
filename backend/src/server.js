@@ -47,6 +47,7 @@ app.use('/api/tournaments', require('./routes/tournaments'))
 app.use('/api/wallet', require('./routes/wallet'))
 app.use('/api/leaderboard', require('./routes/leaderboard'))
 app.use('/api/admin', require('./routes/admin'))
+app.use('/api/content', require('./routes/content'))
 app.use('/api/users', require('./routes/users'))
 
 // Health check

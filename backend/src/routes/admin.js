@@ -232,4 +232,62 @@ router.post('/announcements', adminAuth, async (req, res) => {
   }
 })
 
+// Homepage Content Management
+router.get('/content/games', adminAuth, async (req, res) => {
+  try {
+    const data = await PlatformConfig.get('homepage_games', null)
+    return success(res, data)
+  } catch (err) {
+    return error(res, 'Failed to get games config', 500, err.message)
+  }
+})
+
+router.put('/content/games', adminAuth, async (req, res) => {
+  try {
+    const { games } = req.body
+    await PlatformConfig.set('homepage_games', games, 'platform', req.user._id)
+    return success(res, games, 'Games display updated')
+  } catch (err) {
+    return error(res, 'Failed to update games', 500, err.message)
+  }
+})
+
+router.get('/content/sponsors', adminAuth, async (req, res) => {
+  try {
+    const data = await PlatformConfig.get('homepage_sponsors', [])
+    return success(res, data)
+  } catch (err) {
+    return error(res, 'Failed to get sponsors', 500, err.message)
+  }
+})
+
+router.put('/content/sponsors', adminAuth, async (req, res) => {
+  try {
+    const { sponsors } = req.body
+    await PlatformConfig.set('homepage_sponsors', sponsors, 'platform', req.user._id)
+    return success(res, sponsors, 'Sponsors updated')
+  } catch (err) {
+    return error(res, 'Failed to update sponsors', 500, err.message)
+  }
+})
+
+router.get('/content/reviews', adminAuth, async (req, res) => {
+  try {
+    const data = await PlatformConfig.get('homepage_reviews', [])
+    return success(res, data)
+  } catch (err) {
+    return error(res, 'Failed to get reviews', 500, err.message)
+  }
+})
+
+router.put('/content/reviews', adminAuth, async (req, res) => {
+  try {
+    const { reviews } = req.body
+    await PlatformConfig.set('homepage_reviews', reviews, 'platform', req.user._id)
+    return success(res, reviews, 'Reviews updated')
+  } catch (err) {
+    return error(res, 'Failed to update reviews', 500, err.message)
+  }
+})
+
 module.exports = router
