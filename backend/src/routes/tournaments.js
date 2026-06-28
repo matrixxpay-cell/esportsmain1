@@ -5,14 +5,6 @@ const { auth, adminAuth } = require('../middleware/auth')
 
 router.get('/', tournamentController.getTournaments)
 router.get('/my/registered', auth, tournamentController.getMyTournaments)
-router.get('/:id', tournamentController.getTournament)
-
-router.post('/', adminAuth, tournamentController.createTournament)
-router.put('/:id', adminAuth, tournamentController.updateTournament)
-router.patch('/:id/status', adminAuth, tournamentController.updateStatus)
-router.delete('/:id', adminAuth, tournamentController.deleteTournament)
-router.post('/:id/results', adminAuth, tournamentController.publishResults)
-router.post('/:id/room-details', adminAuth, tournamentController.sendRoomDetails)
 
 router.get('/lookup/mlbb', auth, async (req, res) => {
   const { id, zone } = req.query
@@ -38,6 +30,15 @@ router.get('/lookup/mlbb', auth, async (req, res) => {
 
   return res.status(404).json({ success: false, message: 'Player not found. Please verify your User ID and Zone.' })
 })
+
+router.get('/:id', tournamentController.getTournament)
+
+router.post('/', adminAuth, tournamentController.createTournament)
+router.put('/:id', adminAuth, tournamentController.updateTournament)
+router.patch('/:id/status', adminAuth, tournamentController.updateStatus)
+router.delete('/:id', adminAuth, tournamentController.deleteTournament)
+router.post('/:id/results', adminAuth, tournamentController.publishResults)
+router.post('/:id/room-details', adminAuth, tournamentController.sendRoomDetails)
 
 router.post('/:id/register', auth, tournamentController.registerForTournament)
 router.post('/:id/confirm-payment', auth, tournamentController.confirmPayment)
