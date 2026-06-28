@@ -65,4 +65,14 @@ export const adminService = {
     const res = await api.patch(`/tournaments/${id}/status`, { status })
     return res.data.data
   },
+
+  fillDemoTeams: async (id: string, count: number) => {
+    const res = await api.post(`/tournaments/${id}/demo-teams`, { count })
+    return res.data.data
+  },
+
+  generateBrackets: async (id: string, shuffle: boolean, thirdPlace: boolean) => {
+    const res = await api.post(`/tournaments/${id}/generate-brackets`, { shuffle, thirdPlace })
+    return res.data.data
+  },
 }

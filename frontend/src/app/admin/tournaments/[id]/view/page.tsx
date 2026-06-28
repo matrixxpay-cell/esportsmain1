@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Edit2, Trash2, Users, Calendar, Trophy, IndianRupee, GamepadIcon, Send, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Edit2, Trash2, Users, Calendar, Trophy, IndianRupee, GamepadIcon, Send, Copy, Check, Swords, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { adminService } from '@/services/adminService'
 import { useAuthStore } from '@/store/authStore'
@@ -20,6 +20,7 @@ export default function AdminTournamentViewPage() {
   const [roomPass, setRoomPass] = useState('')
   const [sending, setSending] = useState(false)
   const [copied, setCopied] = useState('')
+  const [expandedTeam, setExpandedTeam] = useState<number | null>(null)
 
   useEffect(() => {
     adminService.getTournament(id as string).then(t => {
@@ -147,42 +148,74 @@ export default function AdminTournamentViewPage() {
             </button>
           </motion.div>
 
-          {/* Participants */}
+          {/* Registered Teams */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-white">Registered Players ({filled})</h2>
-              {filled > 0 && (
-                <button onClick={copyAllEmails}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-neon-blue transition-colors px-3 py-1.5 rounded-lg glass-card">
-                  <Copy className="w-3.5 h-3.5" /> Copy All Emails
-                </button>
-              )}
+              <h2 className="font-semibold text-white">Registered Teams ({filled})</h2>
+              <div className="flex items-center gap-2">
+                {filled > 0 && (
+                  <button onClick={copyAllEmails}
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-neon-blue transition-colors px-3 py-1.5 rounded-lg glass-card">
+                    <Copy className="w-3.5 h-3.5" /> Copy All Emails
+                  </button>
+                )}
+                <Link href={`/admin/tournaments/${id}/fixtures`}
+                  className="flex items-center gap-1.5 text-xs text-saffron hover:text-orange-300 transition-colors px-3 py-1.5 rounded-lg glass-card border border-saffron/20">
+                  <Swords className="w-3.5 h-3.5" /> Fixtures & Brackets
+                </Link>
+              </div>
             </div>
             {filled > 0 ? (
               <div className="space-y-2">
                 {participants.map((p: any, i: number) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] text-sm">
-                    <div className="w-8 h-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs flex-shrink-0">
-                      {(p.username || '?')[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium flex items-center gap-2">
-                        {p.teamName ? `${p.teamName} (${p.username})` : p.username}
+                  <div key={i} className="rounded-xl bg-white/[0.02] text-sm overflow-hidden">
+                    <div
+                      className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/[0.03] transition-colors"
+                      onClick={() => setExpandedTeam(expandedTeam === i ? null : i)}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs flex-shrink-0">
+                        {i + 1}
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        {p.email && <span className="text-slate-500 text-xs">{p.email}</span>}
-                        {p.inGameId && <span className="text-neon-blue text-xs">ID: {p.inGameId}</span>}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-medium">
+                          {p.teamName || p.username}
+                        </div>
+                        <div className="text-slate-500 text-xs mt-0.5">
+                          {p.teamMembers?.length > 0 ? `${p.teamMembers.length + 1} members` : 'Solo'}
+                          {p.inGameId && <span className="ml-2 text-neon-blue">ID: {p.inGameId}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>
+                        {p.teamMembers?.length > 0 && (
+                          expandedTeam === i
+                            ? <ChevronUp className="w-4 h-4 text-slate-500" />
+                            : <ChevronDown className="w-4 h-4 text-slate-500" />
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>
-                      {p.email && (
-                        <button onClick={() => copyEmail(p.email)}
-                          className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-neon-blue transition-colors">
-                          {copied === p.email ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
-                      )}
-                    </div>
+                    {expandedTeam === i && (
+                      <div className="border-t border-white/5 px-3 pb-3">
+                        <div className="mt-2 space-y-1.5">
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02] text-xs">
+                            <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-[10px] font-bold">C</div>
+                            <span className="text-white">{p.username}</span>
+                            {p.email && <span className="text-slate-500">{p.email}</span>}
+                            {p.inGameId && <span className="text-neon-blue">ID: {p.inGameId}</span>}
+                            <span className="text-green-400/60 ml-auto text-[10px]">Captain</span>
+                          </div>
+                          {(p.teamMembers || []).map((m: any, mi: number) => (
+                            <div key={mi} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02] text-xs">
+                              <div className="w-5 h-5 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-400 text-[10px] font-bold">{mi + 2}</div>
+                              <span className="text-white">{m.username || 'Player'}</span>
+                              {m.email && <span className="text-slate-500">{m.email}</span>}
+                              {m.inGameId && <span className="text-neon-blue">ID: {m.inGameId}</span>}
+                              {m.isSubstitute && <span className="text-yellow-400/60 ml-auto text-[10px]">Sub</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

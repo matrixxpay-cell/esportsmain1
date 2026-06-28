@@ -265,6 +265,123 @@ exports.publishResults = async (req, res) => {
   }
 }
 
+exports.fillDemoTeams = async (req, res) => {
+  try {
+    const { count = 8 } = req.body
+    const tournament = await Tournament.findById(req.params.id)
+    if (!tournament) return error(res, 'Tournament not found', 404)
+
+    const numTeams = Math.min(parseInt(count), tournament.maxSlots - tournament.participants.length)
+    if (numTeams <= 0) return error(res, 'No slots available for demo teams', 400)
+
+    const teamNames = [
+      'Team Alpha', 'Team Bravo', 'Team Charlie', 'Team Delta',
+      'Team Echo', 'Team Foxtrot', 'Team Ghost', 'Team Havoc',
+      'Team Ignite', 'Team Jaguar', 'Team Krypton', 'Team Lightning',
+      'Team Maverick', 'Team Nova', 'Team Omega', 'Team Phoenix',
+      'Team Quantum', 'Team Raptor', 'Team Shadow', 'Team Titan',
+      'Team Ultra', 'Team Venom', 'Team Warrior', 'Team Xenon',
+      'Team Yonder', 'Team Zenith', 'Team Blaze', 'Team Cyclone',
+      'Team Draco', 'Team Falcon', 'Team Hydra', 'Team Inferno',
+    ]
+
+    const existingNames = new Set(tournament.participants.map(p => p.teamName))
+    const available = teamNames.filter(n => !existingNames.has(n))
+
+    const demoId = new (require('mongoose').Types.ObjectId)()
+    for (let i = 0; i < numTeams && i < available.length; i++) {
+      const name = available[i]
+      const memberCount = tournament.gameMode === 'squad' ? 4 : tournament.gameMode === '5v5' ? 5 : tournament.gameMode === 'duo' ? 2 : 1
+      const members = []
+      for (let m = 1; m < memberCount; m++) {
+        members.push({
+          userId: new (require('mongoose').Types.ObjectId)(),
+          username: `${name.replace('Team ', '')}Player${m + 1}`,
+          inGameId: `DEMO${Math.floor(1000 + Math.random() * 9000)}`,
+          email: `demo${i}_${m}@example.com`,
+        })
+      }
+      tournament.participants.push({
+        userId: new (require('mongoose').Types.ObjectId)(),
+        username: `${name.replace('Team ', '')}Captain`,
+        email: `demo_captain${i}@example.com`,
+        inGameId: `DEMO${Math.floor(1000 + Math.random() * 9000)}`,
+        teamName: name,
+        teamMembers: members,
+        paymentStatus: 'paid',
+      })
+    }
+    tournament.filledSlots = tournament.participants.length
+    await tournament.save()
+    return success(res, tournament, `${numTeams} demo teams added`)
+  } catch (err) {
+    return error(res, 'Failed to fill demo teams', 500, err.message)
+  }
+}
+
+exports.generateBrackets = async (req, res) => {
+  try {
+    const { shuffle = true, thirdPlace = false } = req.body
+    const tournament = await Tournament.findById(req.params.id)
+    if (!tournament) return error(res, 'Tournament not found', 404)
+    if (tournament.participants.length < 2) return error(res, 'Need at least 2 teams to generate brackets', 400)
+
+    let teams = [...tournament.participants]
+    if (shuffle) {
+      for (let i = teams.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [teams[i], teams[j]] = [teams[j], teams[i]]
+      }
+    }
+
+    const n = teams.length
+    const nextPow2 = Math.pow(2, Math.ceil(Math.log2(n)))
+    const totalRounds = Math.ceil(Math.log2(nextPow2))
+    const brackets = []
+    let matchCounter = 1
+
+    for (let i = 0; i < nextPow2; i += 2) {
+      const p1 = i < n ? teams[i].userId : null
+      const p2 = (i + 1) < n ? teams[i + 1].userId : null
+      const isBye = !p1 || !p2
+      brackets.push({
+        matchId: `R1M${matchCounter}`,
+        round: 1,
+        player1: p1,
+        player2: p2,
+        winner: isBye ? (p1 || p2) : undefined,
+        status: isBye ? 'completed' : 'pending',
+      })
+      matchCounter++
+    }
+
+    for (let round = 2; round <= totalRounds; round++) {
+      const matchesInRound = nextPow2 / Math.pow(2, round)
+      for (let i = 0; i < matchesInRound; i++) {
+        brackets.push({
+          matchId: `R${round}M${i + 1}`,
+          round,
+          status: 'pending',
+        })
+      }
+    }
+
+    if (thirdPlace) {
+      brackets.push({
+        matchId: `R${totalRounds}M_3RD`,
+        round: totalRounds,
+        status: 'pending',
+      })
+    }
+
+    tournament.brackets = brackets
+    await tournament.save()
+    return success(res, tournament, 'Brackets generated')
+  } catch (err) {
+    return error(res, 'Failed to generate brackets', 500, err.message)
+  }
+}
+
 exports.deleteTournament = async (req, res) => {
   try {
     const tournament = await Tournament.findById(req.params.id)
