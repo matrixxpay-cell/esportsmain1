@@ -1,3 +1,5 @@
+export const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || ''
+
 export const PLATFORM_NAME = 'EsportsG'
 export const PLATFORM_TAGLINE = 'Ab Nahi Khelega India Toh Kab Khelega?'
 export const PLATFORM_TAGLINE_HINDI = 'अब नहीं खेलेगा इंडिया तो कब खेलेगा?'

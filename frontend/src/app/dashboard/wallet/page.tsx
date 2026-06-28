@@ -46,7 +46,36 @@ export default function WalletPage() {
     setSubmitting(true)
     try {
       const order = await walletService.createDepositOrder(amount)
-      toast.success('Redirecting to payment gateway...')
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        amount: order!.amount,
+        currency: order!.currency || 'INR',
+        name: 'EsportsG',
+        description: 'Wallet Deposit',
+        order_id: order!.orderId,
+        handler: async function (response: any) {
+          try {
+            await walletService.confirmDeposit({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount,
+            })
+            toast.success('Deposit successful!')
+            const bal = await walletService.getBalance()
+            setWalletData(bal)
+            const txRes = await walletService.getTransactions(1, 20)
+            setTransactions((txRes as any).data || [])
+            setDepositAmount('')
+          } catch (err: any) {
+            toast.error(err.message || 'Deposit confirmation failed')
+          }
+        },
+        prefill: { email: user?.email },
+        theme: { color: '#FF6B2B' },
+      }
+      const rzp = new (window as any).Razorpay(options)
+      rzp.open()
     } catch (e: any) {
       toast.error(e.message || 'Failed to create order')
     } finally {
