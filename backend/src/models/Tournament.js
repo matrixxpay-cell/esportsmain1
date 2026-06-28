@@ -20,13 +20,27 @@ const participantSchema = new mongoose.Schema({
 })
 
 const bracketMatchSchema = new mongoose.Schema({
-  matchId: { type: String, required: true },
+  matchNumber: { type: Number, required: true },
   round: { type: Number, required: true },
-  player1: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  player2: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  score: String,
-  scheduledAt: Date,
+  roundName: String,
+  team1: {
+    participantIndex: Number,
+    teamName: String,
+    score: Number,
+    stats: mongoose.Schema.Types.Mixed,
+  },
+  team2: {
+    participantIndex: Number,
+    teamName: String,
+    score: Number,
+    stats: mongoose.Schema.Types.Mixed,
+  },
+  winner: { type: Number },
+  isBye: { type: Boolean, default: false },
+  nextMatchNumber: Number,
+  roomId: String,
+  roomPassword: String,
+  roomDetailsSent: { type: Boolean, default: false },
   status: { type: String, enum: ['pending', 'ongoing', 'completed'], default: 'pending' },
 })
 
@@ -64,6 +78,10 @@ const tournamentSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   participants: [participantSchema],
   brackets: [bracketMatchSchema],
+  bracketsGenerated: { type: Boolean, default: false },
+  thirdPlaceMatch: { type: Boolean, default: false },
+  currentRound: { type: Number, default: 0 },
+  totalRounds: { type: Number, default: 0 },
   isFeatured: { type: Boolean, default: false },
   maxSubstitutes: { type: Number, default: 0, min: 0, max: 3 },
   tags: [String],

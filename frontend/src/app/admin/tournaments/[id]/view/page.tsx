@@ -85,6 +85,10 @@ export default function AdminTournamentViewPage() {
           <p className="text-slate-400 text-sm">Tournament Details</p>
         </div>
         <div className="flex gap-2">
+          <Link href={`/admin/tournaments/${id}/brackets`}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-saffron/10 text-saffron border border-saffron/20 hover:bg-saffron/20 transition-colors">
+            <Trophy className="w-4 h-4" /> Brackets
+          </Link>
           <Link href={`/admin/tournaments/${id}/edit`}
             className="btn-ghost flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
             <Edit2 className="w-4 h-4" /> Edit

@@ -31,6 +31,13 @@ router.get('/lookup/mlbb', auth, async (req, res) => {
   return res.status(404).json({ success: false, message: 'Player not found. Please verify your User ID and Zone.' })
 })
 
+router.get('/:id/brackets', tournamentController.getBrackets)
+router.post('/:id/brackets/generate', adminAuth, tournamentController.generateBrackets)
+router.put('/:id/brackets/:matchNumber', adminAuth, tournamentController.updateMatchResult)
+router.post('/:id/brackets/:matchNumber/room', adminAuth, tournamentController.sendMatchRoomDetails)
+router.delete('/:id/brackets', adminAuth, tournamentController.resetBrackets)
+router.post('/:id/demo-fill', adminAuth, tournamentController.demoFill)
+
 router.get('/:id', tournamentController.getTournament)
 
 router.post('/', adminAuth, tournamentController.createTournament)

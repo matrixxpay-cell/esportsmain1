@@ -65,4 +65,34 @@ export const adminService = {
     const res = await api.patch(`/tournaments/${id}/status`, { status })
     return res.data.data
   },
+
+  demoFill: async (id: string, count: number) => {
+    const res = await api.post(`/tournaments/${id}/demo-fill`, { count })
+    return res.data
+  },
+
+  generateBrackets: async (id: string, opts: { shuffle?: boolean; thirdPlace?: boolean } = {}) => {
+    const res = await api.post(`/tournaments/${id}/brackets/generate`, opts)
+    return res.data
+  },
+
+  getBrackets: async (id: string) => {
+    const res = await api.get(`/tournaments/${id}/brackets`)
+    return res.data.data
+  },
+
+  updateMatchResult: async (id: string, matchNumber: number, data: any) => {
+    const res = await api.put(`/tournaments/${id}/brackets/${matchNumber}`, data)
+    return res.data
+  },
+
+  resetBrackets: async (id: string) => {
+    const res = await api.delete(`/tournaments/${id}/brackets`)
+    return res.data
+  },
+
+  sendMatchRoom: async (id: string, matchNumber: number, roomId: string, roomPassword: string) => {
+    const res = await api.post(`/tournaments/${id}/brackets/${matchNumber}/room`, { roomId, roomPassword })
+    return res.data
+  },
 }
