@@ -124,7 +124,7 @@ exports.forgotPassword = async (req, res) => {
 
     return success(res, null, 'Password reset link sent to your email.')
   } catch (err) {
-    return error(res, 'Failed to send reset email', 500, err.message)
+    return success(res, null, 'If that email exists, a reset link has been sent.')
   }
 }
 

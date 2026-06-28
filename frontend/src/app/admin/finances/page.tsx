@@ -10,7 +10,7 @@ export default function AdminFinancesPage() {
   const [withdrawals, setWithdrawals] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('pending')
+
 
   const load = async () => {
     setLoading(true)

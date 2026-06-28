@@ -52,6 +52,4 @@ export const STATS = {
 export const NAV_LINKS = [
   { label: 'Tournaments', href: '/dashboard/tournaments' },
   { label: 'Leaderboard', href: '/dashboard/leaderboard' },
-  { label: 'Games', href: '/games' },
-  { label: 'Community', href: '/community' },
 ]

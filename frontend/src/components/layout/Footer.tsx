@@ -52,9 +52,7 @@ export default function Footer() {
               {[
                 { label: 'Tournaments', href: '/dashboard/tournaments' },
                 { label: 'Leaderboard', href: '/dashboard/leaderboard' },
-                { label: 'Games', href: '/games' },
                 { label: 'Wallet', href: '/dashboard/wallet' },
-                { label: 'Community', href: '/community' },
               ].map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="text-slate-400 hover:text-neon-blue text-sm transition-colors duration-200">
@@ -71,7 +69,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {GAMES.map((game) => (
                 <li key={game.id}>
-                  <Link href={`/games/${game.id}`} className="text-slate-400 hover:text-neon-blue text-sm transition-colors duration-200">
+                  <Link href={`/dashboard/tournaments?game=${game.id}`} className="text-slate-400 hover:text-neon-blue text-sm transition-colors duration-200">
                     {game.shortName}
                   </Link>
                 </li>

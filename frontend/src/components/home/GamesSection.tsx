@@ -31,7 +31,7 @@ export default function GamesSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
             >
-              <Link href={`/games/${game.id}`}
+              <Link href={`/dashboard/tournaments?game=${game.id}`}
                 className="group block glass-card rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300"
                 style={{ borderColor: `rgba(${game.color.slice(1).match(/.{2}/g)?.map(h => parseInt(h, 16)).join(',')}, 0.2)` }}
               >

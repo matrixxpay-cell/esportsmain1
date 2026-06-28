@@ -62,10 +62,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           <div className="mt-auto space-y-1 pt-4 border-t border-white/[0.06]">
-            <Link href="/dashboard/settings" className="sidebar-link">
-              <Settings className="w-4 h-4" />
-              <span className="text-sm">Settings</span>
-            </Link>
             <button onClick={() => { logout(); router.push('/') }}
               className="sidebar-link w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/10">
               <LogOut className="w-4 h-4" />
@@ -90,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile bottom nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 nav-blur border-t border-white/[0.06] z-40">
         <div className="flex items-center justify-around py-2 px-4">
-          {SIDEBAR_LINKS.slice(0, 4).map(({ icon: Icon, label, href }) => (
+          {SIDEBAR_LINKS.slice(0, 5).map(({ icon: Icon, label, href }) => (
             <Link key={href} href={href}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
                 pathname === href ? 'text-neon-blue' : 'text-slate-500 hover:text-slate-300'
@@ -99,13 +95,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="text-xs">{label}</span>
             </Link>
           ))}
-          <Link href="/dashboard/profile"
-            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
-              pathname === '/dashboard/profile' ? 'text-neon-blue' : 'text-slate-500'
-            }`}>
-            <User className="w-5 h-5" />
-            <span className="text-xs">Profile</span>
-          </Link>
         </div>
       </div>
     </div>

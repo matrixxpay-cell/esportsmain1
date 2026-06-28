@@ -16,7 +16,7 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 export default function NotificationsPage() {
-  const { user, setUser } = useAuthStore()
+  const { user } = useAuthStore()
   const [notifications, setNotifications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
                 <div key={t._id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
                   <div className="flex-1">
                     <div className="text-sm text-white font-medium">{t.title}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{t.game} • {t.registrations?.length ?? 0} participants</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{t.game} • {t.participants?.length ?? t.filledSlots ?? 0} participants</div>
                   </div>
                   <div className="text-right">
                     <div className="text-saffron font-rajdhani text-xs">₹{t.prizePool?.toLocaleString('en-IN')}</div>

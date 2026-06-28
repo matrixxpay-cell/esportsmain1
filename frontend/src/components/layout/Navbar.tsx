@@ -86,7 +86,6 @@ export default function Navbar() {
                 {/* Notifications */}
                 <Link href="/dashboard/notifications" className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors duration-200">
                   <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-neon-blue rounded-full"></span>
                 </Link>
 
                 {/* User Menu */}
@@ -132,9 +131,9 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 text-sm transition-colors">
                             <Wallet className="w-4 h-4" /> Wallet
                           </Link>
-                          <Link href="/dashboard/settings" onClick={() => setIsUserMenuOpen(false)}
+                          <Link href="/dashboard/notifications" onClick={() => setIsUserMenuOpen(false)}
                             className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 text-sm transition-colors">
-                            <Settings className="w-4 h-4" /> Settings
+                            <Bell className="w-4 h-4" /> Notifications
                           </Link>
                           {(user.role === 'admin' || user.role === 'super_admin') && (
                             <Link href="/admin/dashboard" onClick={() => setIsUserMenuOpen(false)}

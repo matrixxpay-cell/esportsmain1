@@ -33,10 +33,13 @@ router.get('/users', adminAuth, async (req, res) => {
   try {
     const { page = 1, limit = 20, search } = req.query
     const query = { role: 'player' }
-    if (search) query.$or = [
-      { username: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-    ]
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      query.$or = [
+        { username: { $regex: escaped, $options: 'i' } },
+        { email: { $regex: escaped, $options: 'i' } },
+      ]
+    }
     const total = await User.countDocuments(query)
     const users = await User.find(query)
       .select('username email phone isActive isBanned isVerified stats createdAt')
@@ -53,6 +56,7 @@ router.put('/users/:id/ban', adminAuth, async (req, res) => {
   try {
     const { reason } = req.body
     const user = await User.findByIdAndUpdate(req.params.id, { isBanned: true, banReason: reason }, { new: true })
+    if (!user) return error(res, 'User not found', 404)
     return success(res, null, `User ${user.username} has been banned.`)
   } catch (err) {
     return error(res, 'Failed to ban user', 500, err.message)
@@ -82,11 +86,12 @@ router.get('/withdrawals/pending', adminAuth, async (req, res) => {
 
 router.put('/withdrawals/:id/approve', adminAuth, async (req, res) => {
   try {
-    const tx = await Transaction.findByIdAndUpdate(req.params.id, {
-      status: 'completed',
-      processedBy: req.user._id,
-      processedAt: new Date(),
-    }, { new: true })
+    const tx = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, status: 'pending' },
+      { status: 'completed', processedBy: req.user._id, processedAt: new Date() },
+      { new: true }
+    )
+    if (!tx) return error(res, 'Transaction not found or already processed', 404)
     return success(res, null, 'Withdrawal approved.')
   } catch (err) {
     return error(res, 'Failed to approve withdrawal', 500, err.message)

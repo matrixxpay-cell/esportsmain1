@@ -72,7 +72,10 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log(`Socket disconnected: ${socket.id}`)
+    for (const [tournamentId, sockets] of tournamentRooms) {
+      sockets.delete(socket.id)
+      if (sockets.size === 0) tournamentRooms.delete(tournamentId)
+    }
   })
 })
 

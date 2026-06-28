@@ -18,7 +18,7 @@ exports.getTournaments = async (req, res) => {
     if (status) query.status = status
     if (type) query.type = type
     if (mode) query.gameMode = mode
-    if (search) query.title = { $regex: search, $options: 'i' }
+    if (search) query.title = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' }
 
     const total = await Tournament.countDocuments(query)
     const tournaments = await Tournament.find(query)
@@ -53,8 +53,9 @@ exports.getTournament = async (req, res) => {
 
 exports.createTournament = async (req, res) => {
   try {
+    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured } = req.body
     const tournament = await Tournament.create({
-      ...req.body,
+      title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured,
       createdBy: req.user._id,
     })
     return success(res, tournament, 'Tournament created', 201)
@@ -65,7 +66,8 @@ exports.createTournament = async (req, res) => {
 
 exports.updateTournament = async (req, res) => {
   try {
-    const tournament = await Tournament.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured } = req.body
+    const tournament = await Tournament.findByIdAndUpdate(req.params.id, { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured }, { new: true })
     if (!tournament) return error(res, 'Tournament not found', 404)
     return success(res, tournament)
   } catch (err) {
@@ -178,15 +180,20 @@ exports.confirmPayment = async (req, res) => {
     const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex')
     if (expected !== razorpay_signature) return error(res, 'Payment verification failed', 400)
 
+    // Prevent duplicate payment confirmation
+    if (tournament.participants.some(p => p.paymentId === razorpay_payment_id)) {
+      return error(res, 'Payment already confirmed', 400)
+    }
+
     // Add participant
-    const regData = req.session?.registrationData || {}
+    const { inGameId, teamName, teamMembers } = req.body
     tournament.participants.push({
       userId: req.user._id,
       username: req.user.username,
       email: req.user.email,
-      inGameId: regData.inGameId,
-      teamName: regData.teamName,
-      teamMembers: regData.teamMembers || [],
+      inGameId: inGameId || '',
+      teamName: teamName || undefined,
+      teamMembers: teamMembers || [],
       paymentStatus: 'paid',
       paymentId: razorpay_payment_id,
     })

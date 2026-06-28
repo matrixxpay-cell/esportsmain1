@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 import { ArrowLeft, Save } from 'lucide-react'
 import Link from 'next/link'
 import { GAMES } from '@/constants/games'
-import { useAuthStore } from '@/store/authStore'
+import { adminService } from '@/services/adminService'
 
 const schema = z.object({
   title: z.string().min(5),
@@ -31,17 +31,14 @@ type FormData = z.infer<typeof schema>
 export default function EditTournamentPage() {
   const { id } = useParams()
   const router = useRouter()
-  const { token } = useAuthStore()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   useEffect(() => {
-    fetch(`/api/tournaments/${id}`)
-      .then(r => r.json())
-      .then(data => {
-        const t = data.data
+    adminService.getTournament(id as string)
+      .then(t => {
         reset({
           title: t.title, description: t.description, game: t.game,
           gameMode: t.gameMode, type: t.type, entryFee: t.entryFee ?? 0,
@@ -57,12 +54,7 @@ export default function EditTournamentPage() {
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/tournaments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) throw new Error('Update failed')
+      await adminService.updateTournament(id as string, data)
       toast.success('Tournament updated!')
       router.push('/admin/tournaments')
     } catch {
@@ -102,7 +94,7 @@ export default function EditTournamentPage() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Game</label>
               <select {...register('game')} className="input-glass">
-                {GAMES.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+                {GAMES.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
               </select>
             </div>
             <div>
@@ -111,6 +103,7 @@ export default function EditTournamentPage() {
                 <option value="solo">Solo</option>
                 <option value="duo">Duo</option>
                 <option value="squad">Squad</option>
+                <option value="5v5">5v5</option>
               </select>
             </div>
           </div>

@@ -50,6 +50,9 @@ exports.confirmDeposit = async (req, res) => {
     const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex')
     if (expected !== razorpay_signature) return error(res, 'Payment verification failed', 400)
 
+    const existingTx = await Transaction.findOne({ razorpayPaymentId: razorpay_payment_id })
+    if (existingTx) return error(res, 'Payment already processed', 400)
+
     const wallet = await Wallet.findOneAndUpdate(
       { userId: req.user._id },
       { $inc: { balance: amount, totalDeposited: amount } },
@@ -81,12 +84,18 @@ exports.requestWithdrawal = async (req, res) => {
     if (!upiId || !upiId.includes('@')) return error(res, 'Invalid UPI ID', 400)
 
     const wallet = await Wallet.findOne({ userId: req.user._id })
+    if (!wallet) return error(res, 'Wallet not found', 404)
     if (!wallet.canWithdraw(amount)) {
       return error(res, wallet.isLocked ? 'Wallet is locked' : 'Insufficient balance', 400)
     }
 
-    // Deduct balance and create pending transaction
-    await Wallet.findOneAndUpdate({ userId: req.user._id }, { $inc: { balance: -amount, totalWithdrawn: amount } })
+    // Atomic deduct to prevent race condition
+    const updated = await Wallet.findOneAndUpdate(
+      { userId: req.user._id, balance: { $gte: amount }, isLocked: false },
+      { $inc: { balance: -amount, totalWithdrawn: amount } },
+      { new: true }
+    )
+    if (!updated) return error(res, 'Withdrawal failed. Insufficient balance or wallet locked.', 400)
 
     await Transaction.create({
       userId: req.user._id,

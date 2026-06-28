@@ -33,7 +33,7 @@ export default function AdminTournamentViewPage() {
   const handleDelete = async () => {
     if (!confirm('Delete this tournament? This cannot be undone.')) return
     try {
-      await fetch(`/api/tournaments/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      await adminService.deleteTournament(id as string)
       router.push('/admin/tournaments')
     } catch { alert('Delete failed') }
   }

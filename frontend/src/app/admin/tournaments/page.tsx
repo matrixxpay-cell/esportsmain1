@@ -19,6 +19,7 @@ const STATUS_TRANSITIONS: Record<string, { label: string; next: string; icon: an
 
 const STATUS_COLOR: Record<string, string> = {
   ongoing: 'text-red-400 bg-red-400/10', registration_open: 'text-green-400 bg-green-400/10',
+  registration_closed: 'text-orange-400 bg-orange-400/10',
   upcoming: 'text-yellow-400 bg-yellow-400/10', completed: 'text-slate-400 bg-slate-400/10',
   cancelled: 'text-red-500 bg-red-500/10',
 }
@@ -109,7 +110,7 @@ export default function AdminTournamentsPage() {
                   </div>
                   <h3 className="font-semibold text-white mb-2">{t.title}</h3>
                   <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
-                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {t.registrations?.length ?? 0}/{t.maxSlots} players</span>
+                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {t.participants?.length ?? t.filledSlots ?? 0}/{t.maxSlots} players</span>
                     <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(t.startDate).toLocaleDateString('en-IN')}</span>
                     <span className="flex items-center gap-1"><Trophy className="w-3.5 h-3.5 text-saffron" /> ₹{t.prizePool?.toLocaleString('en-IN')}</span>
                   </div>
@@ -143,7 +144,7 @@ export default function AdminTournamentsPage() {
               </div>
               <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div className="h-full rounded-full transition-all bg-saffron"
-                  style={{ width: `${Math.min(100, ((t.registrations?.length ?? 0) / t.maxSlots) * 100)}%` }} />
+                  style={{ width: `${Math.min(100, ((t.participants?.length ?? t.filledSlots ?? 0) / t.maxSlots) * 100)}%` }} />
               </div>
             </motion.div>
           ))}

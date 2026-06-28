@@ -37,7 +37,7 @@ export default function ProfilePage() {
       toast.success('Profile updated!')
       setEditing(false)
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Update failed')
+      toast.error(e instanceof Error ? e.message : 'Update failed')
     } finally {
       setSaving(false)
     }

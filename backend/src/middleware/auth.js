@@ -29,6 +29,7 @@ const auth = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
   await auth(req, res, () => {
+    if (!req.user) return
     if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
       return res.status(403).json({ success: false, message: 'Admin access required.' })
     }
@@ -38,6 +39,7 @@ const adminAuth = async (req, res, next) => {
 
 const superAdminAuth = async (req, res, next) => {
   await auth(req, res, () => {
+    if (!req.user) return
     if (req.user.role !== 'super_admin') {
       return res.status(403).json({ success: false, message: 'Super admin access required.' })
     }

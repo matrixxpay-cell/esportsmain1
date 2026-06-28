@@ -27,7 +27,7 @@ export default function AdminAnalyticsPage() {
     if (!gameMap[t.game]) gameMap[t.game] = { count: 0, prize: 0, players: 0 }
     gameMap[t.game].count++
     gameMap[t.game].prize += t.prizePool ?? 0
-    gameMap[t.game].players += t.registrations?.length ?? 0
+    gameMap[t.game].players += t.participants?.length ?? t.filledSlots ?? 0
   })
   const gameStats = Object.entries(gameMap).sort((a, b) => b[1].count - a[1].count)
 
