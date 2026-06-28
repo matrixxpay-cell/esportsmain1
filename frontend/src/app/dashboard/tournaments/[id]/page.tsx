@@ -452,19 +452,71 @@ export default function TournamentDetailPage() {
                 Participants <span className="text-slate-500 font-normal text-sm">({filled})</span>
               </h2>
               {tournament.participants?.length > 0 ? (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {tournament.participants.slice(0, 20).map((p: any, i: number) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <div className="w-7 h-7 rounded-full bg-neon-blue/20 flex items-center justify-center text-neon-blue font-bold text-xs flex-shrink-0">
-                        {(p.username || '?')[0]?.toUpperCase()}
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                  {tournament.participants.map((p: any, i: number) => {
+                    const isTeam = ['duo', 'squad', '5v5'].includes(tournament.gameMode)
+                    const members = p.teamMembers || []
+                    return (
+                      <div key={i} className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden">
+                        {/* Team/Player Header */}
+                        <div className="flex items-center gap-3 p-3">
+                          <div className="w-9 h-9 rounded-xl bg-saffron/15 flex items-center justify-center text-saffron font-bold text-sm flex-shrink-0">
+                            {i + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white font-medium text-sm flex items-center gap-2">
+                              {isTeam && p.teamName ? (
+                                <>
+                                  <span className="truncate">{p.teamName}</span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neon-blue/10 text-neon-blue flex-shrink-0">
+                                    {members.length + 1} players
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="truncate">{p.username || 'Player'}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                              {p.inGameId && (
+                                <span className="text-neon-blue text-xs">ID: {p.inGameId}</span>
+                              )}
+                              {p.joinedAt && (
+                                <span className="text-slate-600 text-xs">
+                                  Joined {new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Team Members */}
+                        {isTeam && members.length > 0 && (
+                          <div className="border-t border-white/5 px-3 py-2 bg-white/[0.01]">
+                            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-medium">Team Members</div>
+                            <div className="space-y-1.5">
+                              {/* Captain/Owner */}
+                              <div className="flex items-center gap-2 text-xs">
+                                <div className="w-5 h-5 rounded bg-yellow-400/15 flex items-center justify-center text-yellow-400 text-[9px] font-bold flex-shrink-0">C</div>
+                                <span className="text-slate-300 truncate">{p.username || 'Captain'}</span>
+                                {p.inGameId && <span className="text-slate-600 ml-auto flex-shrink-0">#{p.inGameId}</span>}
+                              </div>
+                              {members.map((m: any, mi: number) => (
+                                <div key={mi} className="flex items-center gap-2 text-xs">
+                                  <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                                    m.isSubstitute ? 'bg-orange-400/15 text-orange-400' : 'bg-neon-blue/15 text-neon-blue'
+                                  }`}>
+                                    {m.isSubstitute ? 'S' : mi + 2}
+                                  </div>
+                                  <span className="text-slate-300 truncate">{m.username || m.inGameId || `Player ${mi + 2}`}</span>
+                                  {m.inGameId && <span className="text-slate-600 ml-auto flex-shrink-0">#{m.inGameId}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-slate-300 truncate">{p.teamName || p.username}</div>
-                        {p.inGameId && <div className="text-slate-500 text-xs truncate">ID: {p.inGameId}</div>}
-                      </div>
-                    </div>
-                  ))}
-                  {filled > 20 && <p className="text-slate-500 text-xs text-center pt-1">+{filled - 20} more</p>}
+                    )
+                  })}
                 </div>
               ) : (
                 <p className="text-slate-500 text-xs text-center py-4">No participants yet. Be the first!</p>

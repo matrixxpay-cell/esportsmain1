@@ -4,7 +4,8 @@ const User = require('../models/User')
 const Tournament = require('../models/Tournament')
 const Wallet = require('../models/Wallet')
 const Transaction = require('../models/Transaction')
-const { adminAuth } = require('../middleware/auth')
+const PlatformConfig = require('../models/PlatformConfig')
+const { adminAuth, superAdminAuth } = require('../middleware/auth')
 const { success, error, paginate } = require('../utils/response')
 
 // Analytics
@@ -116,6 +117,86 @@ router.put('/withdrawals/:id/reject', adminAuth, async (req, res) => {
     return success(res, null, 'Withdrawal rejected and amount refunded.')
   } catch (err) {
     return error(res, 'Failed to reject withdrawal', 500, err.message)
+  }
+})
+
+// Platform Config
+router.get('/settings/:category', adminAuth, async (req, res) => {
+  try {
+    const data = await PlatformConfig.getByCategory(req.params.category)
+    return success(res, data)
+  } catch (err) {
+    return error(res, 'Failed to get settings', 500, err.message)
+  }
+})
+
+router.put('/settings/:category', adminAuth, async (req, res) => {
+  try {
+    const { category } = req.params
+    const validCategories = ['platform', 'api_keys', 'security', 'email']
+    if (!validCategories.includes(category)) return error(res, 'Invalid category', 400)
+
+    const sensitiveKeys = ['razorpay_key_secret', 'cloudinary_api_secret', 'jwt_secret', 'jwt_refresh_secret', 'email_pass']
+    const updates = req.body
+    for (const [key, value] of Object.entries(updates)) {
+      if (sensitiveKeys.includes(key) && value === '••••••••') continue
+      await PlatformConfig.set(key, value, category, req.user._id)
+    }
+    const data = await PlatformConfig.getByCategory(category)
+
+    for (const k of sensitiveKeys) {
+      if (data[k]) data[k] = '••••••••'
+    }
+    return success(res, data, 'Settings updated')
+  } catch (err) {
+    return error(res, 'Failed to update settings', 500, err.message)
+  }
+})
+
+// Email template preview/test
+router.post('/settings/email/test', adminAuth, async (req, res) => {
+  try {
+    const { sendEmail } = require('../utils/email')
+    const { to, template } = req.body
+    if (!to) return error(res, 'Recipient email required', 400)
+    await sendEmail({
+      to,
+      subject: 'Test Email from EsportsG',
+      html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#1a1a2e;color:#fff;padding:30px;border-radius:12px;">
+        <h2 style="color:#FF6B2B;">EsportsG Test Email</h2>
+        <p>This is a test email from your EsportsG admin panel.</p>
+        <p>Template: <strong>${template || 'default'}</strong></p>
+        <p style="color:#888;font-size:12px;">Sent at ${new Date().toLocaleString('en-IN')}</p>
+      </div>`,
+    })
+    return success(res, null, `Test email sent to ${to}`)
+  } catch (err) {
+    return error(res, 'Failed to send test email', 500, err.message)
+  }
+})
+
+// Admin roles management
+router.get('/admins', adminAuth, async (req, res) => {
+  try {
+    const admins = await User.find({ role: { $in: ['admin', 'super_admin'] } })
+      .select('username email role createdAt')
+      .sort({ createdAt: 1 })
+    return success(res, admins)
+  } catch (err) {
+    return error(res, 'Failed to get admins', 500, err.message)
+  }
+})
+
+router.put('/users/:id/role', adminAuth, async (req, res) => {
+  try {
+    const { role } = req.body
+    if (!['player', 'admin'].includes(role)) return error(res, 'Invalid role', 400)
+    if (req.user.role !== 'super_admin') return error(res, 'Only super admins can change roles', 403)
+    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('username email role')
+    if (!user) return error(res, 'User not found', 404)
+    return success(res, user, `Role updated to ${role}`)
+  } catch (err) {
+    return error(res, 'Failed to update role', 500, err.message)
   }
 })
 
