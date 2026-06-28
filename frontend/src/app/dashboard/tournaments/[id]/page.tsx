@@ -41,11 +41,11 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
   )
   const [submitting, setSubmitting] = useState(false)
 
-  const updatePlayer = (i: number, field: string, val: string) => {
+  const updatePlayer = (i: number, field: string, val: string | boolean) => {
     const next = [...players]; next[i] = { ...next[i], [field]: val }; setPlayers(next)
   }
 
-  const updateSub = (i: number, field: string, val: string) => {
+  const updateSub = (i: number, field: string, val: string | boolean) => {
     const next = [...subs]; next[i] = { ...next[i], [field]: val }; setSubs(next)
   }
 
@@ -55,7 +55,7 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     if (!p.inGameId.trim() || !p.zone?.trim()) { toast.error('Enter User ID and Zone'); return }
 
     const updater = isSub ? updateSub : updatePlayer
-    updater(i, 'lookingUp', true as any)
+    updater(i, 'lookingUp', true)
 
     try {
       const res = await fetch(`https://api.isan.eu.org/nickname/ml?id=${p.inGameId.trim()}&zone=${p.zone.trim()}`)
@@ -70,7 +70,7 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     } catch (e) {
       toast.error('Lookup failed')
     } finally {
-      updater(i, 'lookingUp', false as any)
+      updater(i, 'lookingUp', false)
     }
   }
 
