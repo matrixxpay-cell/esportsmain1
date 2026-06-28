@@ -58,17 +58,18 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     updater(i, 'lookingUp', true)
 
     try {
-      const res = await fetch(`https://api.isan.eu.org/nickname/ml?id=${p.inGameId.trim()}&zone=${p.zone.trim()}`)
-      const data = await res.json()
-      if (data.nickname) {
-        updater(i, 'username', data.nickname)
+      const { default: api } = await import('@/services/api')
+      const res = await api.get('/tournaments/lookup/mlbb', { params: { id: p.inGameId.trim(), zone: p.zone.trim() } })
+      const nickname = res.data?.data?.nickname
+      if (nickname) {
+        updater(i, 'username', nickname)
         updater(i, 'inGameId', p.inGameId.trim())
-        toast.success(`Found: ${data.nickname}`)
+        toast.success(`Found: ${nickname}`)
       } else {
-        toast.error('User not found')
+        toast.error('Player not found. Check User ID and Zone.')
       }
-    } catch (e) {
-      toast.error('Lookup failed')
+    } catch (e: any) {
+      toast.error(e instanceof Error ? e.message : 'Player not found. Check User ID and Zone.')
     } finally {
       updater(i, 'lookingUp', false)
     }
