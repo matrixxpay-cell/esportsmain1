@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const platformConfigSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   value: mongoose.Schema.Types.Mixed,
-  category: { type: String, enum: ['platform', 'api_keys', 'security', 'email'], required: true },
+  category: { type: String, enum: ['platform', 'api_keys', 'security', 'email', 'announcement'], required: true },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true })
 

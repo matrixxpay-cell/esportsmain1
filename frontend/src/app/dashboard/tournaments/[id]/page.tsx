@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trophy, Users, Calendar, IndianRupee, Shield, Medal, Clock, CheckCircle, AlertCircle, X, Gamepad2, UserCircle2, Search } from 'lucide-react'
+import { ArrowLeft, Trophy, Users, Calendar, IndianRupee, Shield, Medal, Clock, CheckCircle, AlertCircle, X, Gamepad2, UserCircle2, Search, Swords, ChevronRight } from 'lucide-react'
 import { tournamentService } from '@/services/tournamentService'
 import { useAuthStore } from '@/store/authStore'
 import { GAMES } from '@/constants/games'
@@ -92,27 +92,62 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
       if (!s.email.trim()) { toast.error('Each sub needs an email'); return }
     }
 
+    const registrationData = {
+      inGameId: players[0].inGameId.trim(),
+      playerEmail: players[0].email.trim(),
+      teamName: teamName.trim() || undefined,
+      teamMembers: players.slice(1).map(p => ({
+        inGameId: p.inGameId.trim(),
+        email: p.email.trim(),
+        ...(isMlbb && { zone: p.zone?.trim(), username: p.username })
+      })).concat(
+        filledSubs.map(s => ({
+          inGameId: s.inGameId.trim(),
+          email: s.email.trim(),
+          isSubstitute: true,
+          ...(isMlbb && { zone: s.zone?.trim(), username: s.username })
+        }))
+      ),
+    }
+
     setSubmitting(true)
     try {
-      await api.post(`/tournaments/${tournament._id}/register`, {
-        inGameId: players[0].inGameId.trim(),
-        playerEmail: players[0].email.trim(),
-        teamName: teamName.trim() || undefined,
-        teamMembers: players.slice(1).map(p => ({
-          inGameId: p.inGameId.trim(),
-          email: p.email.trim(),
-          ...(isMlbb && { zone: p.zone?.trim(), username: p.username })
-        })).concat(
-          filledSubs.map(s => ({
-            inGameId: s.inGameId.trim(),
-            email: s.email.trim(),
-            isSubstitute: true,
-            ...(isMlbb && { zone: s.zone?.trim(), username: s.username })
-          }))
-        ),
-      })
-      toast.success('Successfully registered! 🎉')
-      onSuccess()
+      const res = await api.post(`/tournaments/${tournament._id}/register`, registrationData)
+      const data = res.data?.data
+
+      if (data?.orderId) {
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+          amount: data.amount,
+          currency: data.currency || 'INR',
+          name: 'EsportsG',
+          description: `Entry Fee: ${tournament.title}`,
+          order_id: data.orderId,
+          handler: async function (response: any) {
+            try {
+              await api.post(`/tournaments/${tournament._id}/confirm-payment`, {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                inGameId: registrationData.inGameId,
+                teamName: registrationData.teamName,
+                teamMembers: registrationData.teamMembers,
+              })
+              toast.success('Payment successful! You are registered.')
+              onSuccess()
+            } catch (err: any) {
+              toast.error(err instanceof Error ? err.message : 'Payment confirmation failed')
+            }
+          },
+          prefill: { email: user?.email },
+          theme: { color: '#FF6B2B' },
+        }
+        const rzp = new (window as any).Razorpay(options)
+        rzp.open()
+      } else {
+        toast.success('Successfully registered!')
+        onSuccess()
+      }
     } catch (e: any) {
       toast.error(e instanceof Error ? e.message : 'Registration failed')
     } finally {
@@ -445,82 +480,135 @@ export default function TournamentDetailPage() {
               </motion.div>
             )}
 
-            {/* Participants */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="glass-card rounded-2xl p-5">
-              <h2 className="font-semibold text-white mb-3">
-                Participants <span className="text-slate-500 font-normal text-sm">({filled})</span>
-              </h2>
-              {tournament.participants?.length > 0 ? (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                  {tournament.participants.map((p: any, i: number) => {
-                    const isTeam = ['duo', 'squad', '5v5'].includes(tournament.gameMode)
-                    const members = p.teamMembers || []
-                    return (
-                      <div key={i} className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden">
-                        {/* Team/Player Header */}
-                        <div className="flex items-center gap-3 p-3">
-                          <div className="w-9 h-9 rounded-xl bg-saffron/15 flex items-center justify-center text-saffron font-bold text-sm flex-shrink-0">
-                            {i + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-white font-medium text-sm flex items-center gap-2">
-                              {isTeam && p.teamName ? (
-                                <>
-                                  <span className="truncate">{p.teamName}</span>
-                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neon-blue/10 text-neon-blue flex-shrink-0">
-                                    {members.length + 1} players
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="truncate">{p.username || 'Player'}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                              {p.inGameId && (
-                                <span className="text-neon-blue text-xs">ID: {p.inGameId}</span>
-                              )}
-                              {p.joinedAt && (
-                                <span className="text-slate-600 text-xs">
-                                  Joined {new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+            {/* Your Team Progress */}
+            {isRegistered && (() => {
+              const myTeam = tournament.participants?.find((p: any) =>
+                p.userId === user?._id || p.userId?._id === user?._id || p.userId?.toString() === user?._id
+              )
+              if (!myTeam) return null
+              const isTeam = ['duo', 'squad', '5v5'].includes(tournament.gameMode)
+              const members = myTeam.teamMembers || []
+              const myIndex = tournament.participants?.indexOf(myTeam)
 
-                        {/* Team Members */}
-                        {isTeam && members.length > 0 && (
-                          <div className="border-t border-white/5 px-3 py-2 bg-white/[0.01]">
-                            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-medium">Team Members</div>
-                            <div className="space-y-1.5">
-                              {/* Captain/Owner */}
-                              <div className="flex items-center gap-2 text-xs">
-                                <div className="w-5 h-5 rounded bg-yellow-400/15 flex items-center justify-center text-yellow-400 text-[9px] font-bold flex-shrink-0">C</div>
-                                <span className="text-slate-300 truncate">{p.username || 'Captain'}</span>
-                                {p.inGameId && <span className="text-slate-600 ml-auto flex-shrink-0">#{p.inGameId}</span>}
-                              </div>
-                              {members.map((m: any, mi: number) => (
-                                <div key={mi} className="flex items-center gap-2 text-xs">
-                                  <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                                    m.isSubstitute ? 'bg-orange-400/15 text-orange-400' : 'bg-neon-blue/15 text-neon-blue'
-                                  }`}>
-                                    {m.isSubstitute ? 'S' : mi + 2}
-                                  </div>
-                                  <span className="text-slate-300 truncate">{m.username || m.inGameId || `Player ${mi + 2}`}</span>
-                                  {m.inGameId && <span className="text-slate-600 ml-auto flex-shrink-0">#{m.inGameId}</span>}
-                                </div>
-                              ))}
-                            </div>
+              const myMatches = (tournament.brackets || []).filter((m: any) =>
+                m.team1?.participantIndex === myIndex || m.team2?.participantIndex === myIndex
+              ).sort((a: any, b: any) => (a.round || 0) - (b.round || 0))
+
+              return (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                  className="glass-card rounded-2xl p-5">
+                  <h2 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <Swords className="w-4 h-4 text-saffron" /> Your Team
+                  </h2>
+
+                  {/* Team info */}
+                  <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3 mb-4">
+                    <div className="text-white font-semibold text-sm flex items-center gap-2 mb-1">
+                      {isTeam && myTeam.teamName ? myTeam.teamName : (myTeam.username || 'Player')}
+                      {isTeam && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-neon-blue/10 text-neon-blue">
+                          {members.length + 1} players
+                        </span>
+                      )}
+                    </div>
+                    {myTeam.inGameId && <div className="text-neon-blue text-xs mb-2">ID: {myTeam.inGameId}</div>}
+
+                    {isTeam && members.length > 0 && (
+                      <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
+                        <div className="flex items-center gap-2 text-xs">
+                          <div className="w-5 h-5 rounded bg-yellow-400/15 flex items-center justify-center text-yellow-400 text-[9px] font-bold">C</div>
+                          <span className="text-slate-300">{myTeam.username || 'Captain'}</span>
+                          {myTeam.inGameId && <span className="text-slate-600 ml-auto">#{myTeam.inGameId}</span>}
+                        </div>
+                        {members.map((m: any, mi: number) => (
+                          <div key={mi} className="flex items-center gap-2 text-xs">
+                            <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold ${
+                              m.isSubstitute ? 'bg-orange-400/15 text-orange-400' : 'bg-neon-blue/15 text-neon-blue'
+                            }`}>{m.isSubstitute ? 'S' : mi + 2}</div>
+                            <span className="text-slate-300">{m.username || m.inGameId || `Player ${mi + 2}`}</span>
+                            {m.inGameId && <span className="text-slate-600 ml-auto">#{m.inGameId}</span>}
                           </div>
-                        )}
+                        ))}
                       </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <p className="text-slate-500 text-xs text-center py-4">No participants yet. Be the first!</p>
-              )}
+                    )}
+                  </div>
+
+                  {/* Bracket Progress */}
+                  {myMatches.length > 0 ? (
+                    <div>
+                      <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium mb-2">Bracket Progress</h3>
+                      <div className="space-y-2">
+                        {myMatches.map((match: any) => {
+                          const isTeam1 = match.team1?.participantIndex === myIndex
+                          const myName = isTeam1 ? (match.team1?.teamName || 'You') : (match.team2?.teamName || 'You')
+                          const oppName = isTeam1 ? (match.team2?.teamName || 'TBD') : (match.team1?.teamName || 'TBD')
+                          const myScore = isTeam1 ? match.team1?.score : match.team2?.score
+                          const oppScore = isTeam1 ? match.team2?.score : match.team1?.score
+                          const won = match.winner === (isTeam1 ? 'team1' : 'team2')
+                          const lost = match.winner && !won
+                          const isBye = match.isBye
+
+                          return (
+                            <div key={match.matchNumber} className={`rounded-xl border p-3 ${
+                              won ? 'border-green-400/20 bg-green-400/5' :
+                              lost ? 'border-red-400/20 bg-red-400/5' :
+                              isBye ? 'border-slate-500/20 bg-white/[0.02]' :
+                              'border-saffron/20 bg-saffron/5'
+                            }`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-[10px] text-slate-500 uppercase font-medium">
+                                  {match.roundName || `Round ${match.round}`}
+                                </span>
+                                {isBye ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-400/10 text-slate-400 font-medium">BYE</span>
+                                ) : won ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-400/10 text-green-400 font-medium">WON</span>
+                                ) : lost ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-400/10 text-red-400 font-medium">LOST</span>
+                                ) : (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-saffron/10 text-saffron font-medium">UPCOMING</span>
+                                )}
+                              </div>
+                              {isBye ? (
+                                <div className="text-sm text-slate-400">Auto-advanced (bye)</div>
+                              ) : (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className={`font-medium ${won ? 'text-green-400' : lost ? 'text-red-400' : 'text-white'}`}>{myName}</span>
+                                  {match.winner && (
+                                    <span className="text-xs text-slate-500">{myScore ?? 0} - {oppScore ?? 0}</span>
+                                  )}
+                                  <ChevronRight className="w-3 h-3 text-slate-600" />
+                                  <span className="text-slate-400">{oppName}</span>
+                                </div>
+                              )}
+                              {match.roomId && (
+                                <div className="mt-1.5 pt-1.5 border-t border-white/5 text-xs">
+                                  <span className="text-slate-500">Room: </span>
+                                  <span className="text-neon-blue font-medium">{match.roomId}</span>
+                                  {match.roomPassword && (
+                                    <><span className="text-slate-500 ml-2">Pass: </span><span className="text-neon-blue font-medium">{match.roomPassword}</span></>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : tournament.bracketsGenerated ? (
+                    <p className="text-slate-500 text-xs text-center py-2">Brackets generated — matches loading...</p>
+                  ) : (
+                    <p className="text-slate-500 text-xs text-center py-2">Brackets not yet generated by admin</p>
+                  )}
+                </motion.div>
+              )
+            })()}
+
+            {/* Participant Count */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="glass-card rounded-2xl p-5">
+              <h2 className="font-semibold text-white mb-2">Participants</h2>
+              <p className="text-slate-400 text-sm">{filled} / {tournament.maxSlots} teams registered</p>
             </motion.div>
           </div>
         </div>

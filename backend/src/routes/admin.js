@@ -200,4 +200,36 @@ router.put('/users/:id/role', adminAuth, async (req, res) => {
   }
 })
 
+// Announcements
+router.get('/announcements', adminAuth, async (req, res) => {
+  try {
+    const announcements = await PlatformConfig.find({ category: 'announcement' }).sort({ createdAt: -1 }).limit(20)
+    return success(res, announcements)
+  } catch (err) {
+    return error(res, 'Failed to get announcements', 500, err.message)
+  }
+})
+
+router.post('/announcements', adminAuth, async (req, res) => {
+  try {
+    const { title, message, type } = req.body
+    if (!title || !message) return error(res, 'Title and message required', 400)
+
+    const key = `announcement_${Date.now()}`
+    await PlatformConfig.create({
+      key,
+      value: { title, message, type: type || 'info', createdBy: req.user.username, createdAt: new Date() },
+      category: 'announcement',
+      updatedBy: req.user._id,
+    })
+
+    const notification = { title, message, type: type || 'info', isRead: false }
+    const result = await User.updateMany({}, { $push: { notifications: { $each: [notification], $position: 0 } } })
+
+    return success(res, { sent: result.modifiedCount }, `Announcement sent to ${result.modifiedCount} users`)
+  } catch (err) {
+    return error(res, 'Failed to send announcement', 500, err.message)
+  }
+})
+
 module.exports = router
