@@ -54,9 +54,9 @@ exports.getTournament = async (req, res) => {
 
 exports.createTournament = async (req, res) => {
   try {
-    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured } = req.body
+    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes } = req.body
     const tournament = await Tournament.create({
-      title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured,
+      title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes,
       createdBy: req.user._id,
     })
     return success(res, tournament, 'Tournament created', 201)
@@ -67,8 +67,8 @@ exports.createTournament = async (req, res) => {
 
 exports.updateTournament = async (req, res) => {
   try {
-    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured } = req.body
-    const tournament = await Tournament.findByIdAndUpdate(req.params.id, { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizes, bannerImage, isFeatured }, { new: true })
+    const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes } = req.body
+    const tournament = await Tournament.findByIdAndUpdate(req.params.id, { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes }, { new: true })
     if (!tournament) return error(res, 'Tournament not found', 404)
     return success(res, tournament)
   } catch (err) {
