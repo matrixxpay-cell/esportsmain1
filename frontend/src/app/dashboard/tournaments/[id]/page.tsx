@@ -64,7 +64,7 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
       if (nickname) {
         updater(i, 'username', nickname)
         updater(i, 'inGameId', p.inGameId.trim())
-        toast.success(`Found: ${nickname}`)
+        // username shown inline in form
       } else {
         toast.error('Player not found. Check User ID and Zone.')
       }
@@ -177,7 +177,9 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
                         {p.lookingUp ? <span className="w-3 h-3 border-2 border-saffron/30 border-t-saffron rounded-full animate-spin" /> : <Search className="w-3.5 h-3.5" />}
                         {p.lookingUp ? 'Looking up...' : 'Lookup Username'}
                       </button>
-                      {p.username && <div className="px-3 py-2 rounded-lg bg-white/5 text-xs text-slate-300">Username: <span className="text-saffron font-medium">{p.username}</span></div>}
+                      <input value={p.username || ''} readOnly
+                        placeholder="Username (auto-filled after lookup)"
+                        className="input-glass text-sm !bg-saffron/5 !border-saffron/20 text-saffron font-medium placeholder:text-slate-500 placeholder:font-normal" />
                     </>
                   ) : (
                     <input value={p.inGameId} onChange={e => updatePlayer(i, 'inGameId', e.target.value)}
@@ -219,7 +221,9 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
                           {s.lookingUp ? <span className="w-3 h-3 border-2 border-saffron/30 border-t-saffron rounded-full animate-spin" /> : <Search className="w-3.5 h-3.5" />}
                           {s.lookingUp ? 'Looking up...' : 'Lookup Username'}
                         </button>
-                        {s.username && <div className="px-3 py-2 rounded-lg bg-white/5 text-xs text-slate-300">Username: <span className="text-saffron font-medium">{s.username}</span></div>}
+                        <input value={s.username || ''} readOnly
+                          placeholder="Username (auto-filled after lookup)"
+                          className="input-glass text-sm !bg-saffron/5 !border-saffron/20 text-saffron font-medium placeholder:text-slate-500 placeholder:font-normal" />
                       </>
                     ) : (
                       <input value={s.inGameId} onChange={e => updateSub(i, 'inGameId', e.target.value)}
