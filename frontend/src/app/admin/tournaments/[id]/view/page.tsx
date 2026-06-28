@@ -154,7 +154,7 @@ export default function AdminTournamentViewPage() {
           {/* Participants */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-white">Registered Players ({filled})</h2>
+              <h2 className="font-semibold text-white">Registered Teams / Players ({filled})</h2>
               {filled > 0 && (
                 <button onClick={copyAllEmails}
                   className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-neon-blue transition-colors px-3 py-1.5 rounded-lg glass-card">
@@ -163,32 +163,89 @@ export default function AdminTournamentViewPage() {
               )}
             </div>
             {filled > 0 ? (
-              <div className="space-y-2">
-                {participants.map((p: any, i: number) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] text-sm">
-                    <div className="w-8 h-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs flex-shrink-0">
-                      {(p.username || '?')[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium flex items-center gap-2">
-                        {p.teamName ? `${p.teamName} (${p.username})` : p.username}
+              <div className="space-y-3">
+                {participants.map((p: any, i: number) => {
+                  const members = p.teamMembers || []
+                  const isTeam = !!p.teamName || members.length > 0
+                  return (
+                    <div key={i} className="rounded-xl border border-white/[0.06] overflow-hidden">
+                      {/* Team/Player Header */}
+                      <div className="flex items-center gap-3 p-4 bg-white/[0.02]">
+                        <div className="w-10 h-10 rounded-xl bg-saffron/15 flex items-center justify-center text-saffron font-bold text-sm flex-shrink-0">
+                          {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold text-sm flex items-center gap-2">
+                            {p.teamName || p.username || 'Player'}
+                            {isTeam && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-neon-blue/10 text-neon-blue font-medium">
+                                {members.length + 1} players
+                              </span>
+                            )}
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                              p.paymentStatus === 'paid' ? 'bg-green-400/10 text-green-400' : 'bg-yellow-400/10 text-yellow-400'
+                            }`}>{p.paymentStatus || 'paid'}</span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap text-xs">
+                            {p.email && <span className="text-slate-400">{p.email}</span>}
+                            {p.inGameId && <span className="text-neon-blue">ID: {p.inGameId}</span>}
+                            {p.paymentId && <span className="text-slate-600">Pay: {p.paymentId.slice(0, 16)}...</span>}
+                            {p.joinedAt && <span className="text-slate-600">{new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {p.email && (
+                            <button onClick={() => copyEmail(p.email)}
+                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-neon-blue transition-colors">
+                              {copied === p.email ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        {p.email && <span className="text-slate-500 text-xs">{p.email}</span>}
-                        {p.inGameId && <span className="text-neon-blue text-xs">ID: {p.inGameId}</span>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {p.joinedAt && <span className="text-slate-500 text-xs">{new Date(p.joinedAt).toLocaleDateString('en-IN')}</span>}
-                      {p.email && (
-                        <button onClick={() => copyEmail(p.email)}
-                          className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-neon-blue transition-colors">
-                          {copied === p.email ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
+
+                      {/* Team Members Table */}
+                      {isTeam && (
+                        <div className="border-t border-white/[0.04]">
+                          <div className="grid grid-cols-12 px-4 py-2 text-[10px] text-slate-500 uppercase tracking-wider font-medium bg-white/[0.01]">
+                            <div className="col-span-1">#</div>
+                            <div className="col-span-3">Role</div>
+                            <div className="col-span-3">Username</div>
+                            <div className="col-span-2">In-Game ID</div>
+                            <div className="col-span-3">Email</div>
+                          </div>
+                          {/* Captain */}
+                          <div className="grid grid-cols-12 px-4 py-2.5 items-center text-xs border-t border-white/[0.03] bg-yellow-400/[0.02]">
+                            <div className="col-span-1 text-slate-500">1</div>
+                            <div className="col-span-3">
+                              <span className="px-1.5 py-0.5 rounded bg-yellow-400/15 text-yellow-400 text-[10px] font-bold">CAPTAIN</span>
+                            </div>
+                            <div className="col-span-3 text-white font-medium">{p.username || '—'}</div>
+                            <div className="col-span-2 text-neon-blue">{p.inGameId || '—'}</div>
+                            <div className="col-span-3 text-slate-400 truncate">{p.email || '—'}</div>
+                          </div>
+                          {/* Members */}
+                          {members.map((m: any, mi: number) => (
+                            <div key={mi} className={`grid grid-cols-12 px-4 py-2.5 items-center text-xs border-t border-white/[0.03] ${
+                              m.isSubstitute ? 'bg-orange-400/[0.02]' : ''
+                            }`}>
+                              <div className="col-span-1 text-slate-500">{mi + 2}</div>
+                              <div className="col-span-3">
+                                {m.isSubstitute ? (
+                                  <span className="px-1.5 py-0.5 rounded bg-orange-400/15 text-orange-400 text-[10px] font-bold">SUB</span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 rounded bg-neon-blue/15 text-neon-blue text-[10px] font-bold">PLAYER</span>
+                                )}
+                              </div>
+                              <div className="col-span-3 text-white">{m.username || m.inGameId || '—'}</div>
+                              <div className="col-span-2 text-neon-blue">{m.inGameId || '—'}</div>
+                              <div className="col-span-3 text-slate-400 truncate">{m.email || '—'}</div>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <p className="text-slate-500 text-sm text-center py-6">No registrations yet.</p>
@@ -220,7 +277,7 @@ export default function AdminTournamentViewPage() {
                   const pos = Number(p.position)
                   return (
                     <div key={pos} className="flex justify-between text-sm p-2 rounded-lg bg-white/[0.02]">
-                      <span className="text-slate-300">{pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `#${pos}`} Place</span>
+                      <span className="text-slate-300">{pos === 1 ? '🥇 1st' : pos === 2 ? '🥈 2nd' : pos === 3 ? '🥉 3rd' : `#${pos}th`} Place</span>
                       <span className="text-green-400 font-bold">₹{(p.amount || 0).toLocaleString('en-IN')}</span>
                     </div>
                   )
