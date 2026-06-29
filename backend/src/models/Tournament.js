@@ -95,10 +95,11 @@ tournamentSchema.index({ type: 1 })
 tournamentSchema.index({ isFeatured: 1 })
 
 tournamentSchema.methods.isRegistrationOpen = function () {
-  const filled = this.filledSlots || this.participants?.length || 0
-  return ['registration_open', 'upcoming'].includes(this.status) &&
-    filled < this.maxSlots &&
-    new Date() < new Date(this.registrationDeadline)
+  const filled = this.participants?.length || 0
+  if (!['registration_open', 'upcoming'].includes(this.status)) return false
+  if (filled >= this.maxSlots) return false
+  if (this.registrationDeadline && new Date() > new Date(this.registrationDeadline)) return false
+  return true
 }
 
 tournamentSchema.methods.isParticipant = function (userId) {

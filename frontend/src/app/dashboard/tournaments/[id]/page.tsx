@@ -149,7 +149,7 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
         onSuccess()
       }
     } catch (e: any) {
-      toast.error(e instanceof Error ? e.message : 'Registration failed')
+      toast.error(e?.response?.data?.message || e?.message || 'Registration failed')
     } finally {
       setSubmitting(false)
     }

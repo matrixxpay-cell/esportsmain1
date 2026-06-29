@@ -136,7 +136,15 @@ exports.registerForTournament = async (req, res) => {
   try {
     const tournament = await Tournament.findById(req.params.id)
     if (!tournament) return error(res, 'Tournament not found', 404)
-    if (!tournament.isRegistrationOpen()) return error(res, 'Registration is closed for this tournament', 400)
+    if (!tournament.isRegistrationOpen()) {
+      const filled = tournament.participants?.length || 0
+      const reason = !['registration_open', 'upcoming'].includes(tournament.status)
+        ? `Status is "${tournament.status}"`
+        : filled >= tournament.maxSlots
+        ? 'Tournament is full'
+        : 'Registration deadline has passed'
+      return error(res, `Registration closed: ${reason}`, 400)
+    }
     if (tournament.isParticipant(req.user._id)) return error(res, 'Already registered', 400)
 
     const { inGameId, playerEmail, teamName, teamMembers } = req.body
