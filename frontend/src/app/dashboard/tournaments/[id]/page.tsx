@@ -136,13 +136,21 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
               toast.success('Payment successful! You are registered.')
               onSuccess()
             } catch (err: any) {
-              toast.error(err instanceof Error ? err.message : 'Payment confirmation failed')
+              toast.error(err?.response?.data?.message || err?.message || 'Payment confirmation failed')
             }
           },
           prefill: { email: user?.email },
           theme: { color: '#FF6B2B' },
+          modal: {
+            ondismiss: function () {
+              toast.error('Payment cancelled')
+            },
+          },
         }
         const rzp = new (window as any).Razorpay(options)
+        rzp.on('payment.failed', function (resp: any) {
+          toast.error(resp.error?.description || 'Payment failed')
+        })
         rzp.open()
       } else {
         toast.success('Successfully registered!')
