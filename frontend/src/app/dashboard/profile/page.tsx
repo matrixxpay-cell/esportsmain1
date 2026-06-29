@@ -59,11 +59,27 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Card */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="stat-card-v2 p-6 mb-6">
-        <div className="flex items-start gap-5">
-          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)' }}>
-            {user?.username?.[0]?.toUpperCase()}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="stat-card-v2 p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold text-white flex-shrink-0 shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)' }}>
+              {user?.username?.[0]?.toUpperCase()}
+            </div>
+            <div className="sm:hidden flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="font-gaming font-bold text-lg text-white truncate">{user?.username}</h2>
+                {user?.isVerified && <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />}
+              </div>
+              <p className="text-slate-400 text-xs truncate">{user?.email}</p>
+            </div>
+            <div className="sm:hidden">
+              {!editing && (
+                <button onClick={() => setEditing(true)} className="btn-ghost px-3 py-2 rounded-xl text-sm text-slate-300 flex items-center gap-1.5 hover:text-white">
+                  <Edit2 className="w-3.5 h-3.5" /> Edit
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex-1">
             {editing ? (
@@ -78,16 +94,28 @@ export default function ProfilePage() {
                   <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                     className="input-glass text-sm py-2" maxLength={10} />
                 </div>
+                <div className="flex gap-2">
+                  <button onClick={saveProfile} disabled={saving}
+                    className="btn-primary px-3 py-2 rounded-xl text-sm flex items-center gap-1.5 disabled:opacity-60">
+                    {saving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Save
+                  </button>
+                  <button onClick={() => setEditing(false)} className="btn-ghost px-3 py-2 rounded-xl text-sm">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-3 mb-1">
-                  <h2 className="font-gaming font-bold text-xl text-white">{user?.username}</h2>
-                  {user?.isVerified && <CheckCircle className="w-4 h-4 text-green-400" />}
+                <div className="hidden sm:block">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h2 className="font-gaming font-bold text-xl text-white">{user?.username}</h2>
+                    {user?.isVerified && <CheckCircle className="w-4 h-4 text-green-400" />}
+                  </div>
+                  <p className="text-slate-400 text-sm mb-1">{user?.email}</p>
+                  {user?.phone && <p className="text-slate-500 text-xs mb-3">{user.phone}</p>}
                 </div>
-                <p className="text-slate-400 text-sm mb-1">{user?.email}</p>
-                {user?.phone && <p className="text-slate-500 text-xs mb-3">{user.phone}</p>}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="px-3 py-1 rounded-full bg-neon-blue/10 text-neon-blue text-xs font-semibold border border-neon-blue/20">
                     Rank #{stats.rank || '—'}
                   </div>
@@ -98,19 +126,8 @@ export default function ProfilePage() {
               </>
             )}
           </div>
-          <div className="flex gap-2">
-            {editing ? (
-              <>
-                <button onClick={saveProfile} disabled={saving}
-                  className="btn-primary px-3 py-2 rounded-xl text-sm flex items-center gap-1.5 disabled:opacity-60">
-                  {saving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  Save
-                </button>
-                <button onClick={() => setEditing(false)} className="btn-ghost px-3 py-2 rounded-xl text-sm">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </>
-            ) : (
+          <div className="hidden sm:flex gap-2">
+            {!editing && (
               <button onClick={() => setEditing(true)} className="btn-ghost px-3 py-2 rounded-xl text-sm text-slate-300 flex items-center gap-1.5 hover:text-white">
                 <Edit2 className="w-3.5 h-3.5" /> Edit
               </button>

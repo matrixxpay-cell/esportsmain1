@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { IndianRupee, TrendingUp, Clock, CheckCircle, XCircle, RefreshCw, Receipt, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
+import { IndianRupee, TrendingUp, Clock, CheckCircle, XCircle, RefreshCw, Receipt, ChevronLeft, ChevronRight, Filter, X, User, Calendar, Hash, CreditCard, FileText } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 import { adminService } from '@/services/adminService'
 import toast from 'react-hot-toast'
 
@@ -35,6 +36,18 @@ export default function AdminFinancesPage() {
   const [txStatus, setTxStatus] = useState('')
   const [loading, setLoading] = useState(true)
   const [txLoading, setTxLoading] = useState(false)
+  const [selectedTx, setSelectedTx] = useState<any>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  const openTxDetail = async (id: string) => {
+    setDetailLoading(true)
+    setSelectedTx(null)
+    try {
+      const tx = await adminService.getTransactionDetail(id)
+      setSelectedTx(tx)
+    } catch { toast.error('Failed to load transaction details') }
+    setDetailLoading(false)
+  }
 
   const load = async () => {
     setLoading(true)
@@ -161,7 +174,7 @@ export default function AdminFinancesPage() {
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
                   {transactions.map((tx: any) => (
-                    <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => openTxDetail(tx._id)}>
                       <td className="py-3 text-slate-400 text-xs whitespace-nowrap">
                         {new Date(tx.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                         <div className="text-slate-600 text-[10px]">{new Date(tx.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
@@ -220,6 +233,75 @@ export default function AdminFinancesPage() {
         )}
       </motion.div>
 
+      {/* Transaction Detail Modal */}
+      <AnimatePresence>
+        {(selectedTx || detailLoading) && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => { setSelectedTx(null); setDetailLoading(false) }} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[520px] max-h-[80vh] overflow-y-auto glass-card rounded-2xl z-50 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-saffron" /> Transaction Details
+                </h3>
+                <button onClick={() => { setSelectedTx(null); setDetailLoading(false) }} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {detailLoading ? (
+                <div className="text-center py-12 text-slate-500">Loading...</div>
+              ) : selectedTx && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03]">
+                    <div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase ${TYPE_COLORS[selectedTx.type] || 'bg-slate-400/15 text-slate-400'}`}>
+                        {selectedTx.type?.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div className={`font-rajdhani font-bold text-2xl ${selectedTx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {selectedTx.amount >= 0 ? '+' : ''}₹{Math.abs(selectedTx.amount).toLocaleString('en-IN')}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <DetailItem icon={<Hash className="w-3.5 h-3.5" />} label="Transaction ID" value={selectedTx._id} mono />
+                    <DetailItem icon={<Calendar className="w-3.5 h-3.5" />} label="Date" value={new Date(selectedTx.createdAt).toLocaleString('en-IN')} />
+                    <DetailItem icon={<User className="w-3.5 h-3.5" />} label="User" value={selectedTx.userId?.username || '—'} />
+                    <DetailItem icon={<FileText className="w-3.5 h-3.5" />} label="Email" value={selectedTx.userId?.email || '—'} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <DetailRow label="Description" value={selectedTx.description || '—'} />
+                    <DetailRow label="Status" value={
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[selectedTx.status] || 'bg-slate-400/15 text-slate-400'}`}>
+                        {selectedTx.status}
+                      </span>
+                    } />
+                    <DetailRow label="Balance After" value={selectedTx.balanceAfter != null ? `₹${selectedTx.balanceAfter.toLocaleString('en-IN')}` : '—'} />
+                    {selectedTx.tournamentId && (
+                      <>
+                        <DetailRow label="Tournament" value={selectedTx.tournamentId.title || '—'} highlight />
+                        <DetailRow label="Game" value={selectedTx.tournamentId.game?.replace('-', ' ') || '—'} />
+                        <DetailRow label="Entry Fee" value={`₹${selectedTx.tournamentId.entryFee || 0}`} />
+                        <DetailRow label="Prize Pool" value={`₹${selectedTx.tournamentId.prizePool || 0}`} />
+                      </>
+                    )}
+                    {selectedTx.razorpayOrderId && <DetailRow label="Razorpay Order" value={selectedTx.razorpayOrderId} mono />}
+                    {selectedTx.razorpayPaymentId && <DetailRow label="Razorpay Payment" value={selectedTx.razorpayPaymentId} mono />}
+                    {selectedTx.razorpaySignature && <DetailRow label="Signature" value={selectedTx.razorpaySignature} mono />}
+                    {selectedTx.upiId && <DetailRow label="UPI ID" value={selectedTx.upiId} />}
+                    {selectedTx.reference && <DetailRow label="Reference" value={selectedTx.reference} mono />}
+                    {selectedTx.processedBy && <DetailRow label="Processed By" value={selectedTx.processedBy.username || selectedTx.processedBy} />}
+                    {selectedTx.processedAt && <DetailRow label="Processed At" value={new Date(selectedTx.processedAt).toLocaleString('en-IN')} />}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Withdrawal Requests */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-5">
@@ -269,6 +351,24 @@ export default function AdminFinancesPage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function DetailItem({ icon, label, value, mono }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="bg-white/[0.03] rounded-xl p-3">
+      <div className="flex items-center gap-1.5 text-slate-500 text-[10px] mb-1">{icon}{label}</div>
+      <div className={`text-white text-xs ${mono ? 'font-mono break-all' : ''}`}>{value}</div>
+    </div>
+  )
+}
+
+function DetailRow({ label, value, mono, highlight }: { label: string; value: React.ReactNode; mono?: boolean; highlight?: boolean }) {
+  return (
+    <div className="flex items-start justify-between py-2 border-b border-white/[0.04] last:border-0">
+      <span className="text-slate-500 text-xs">{label}</span>
+      <span className={`text-xs text-right max-w-[60%] ${mono ? 'font-mono break-all text-slate-300' : highlight ? 'text-saffron font-medium' : 'text-white'}`}>{value}</span>
     </div>
   )
 }

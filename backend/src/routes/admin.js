@@ -140,6 +140,20 @@ router.get('/transactions', adminAuth, async (req, res) => {
   }
 })
 
+// Single transaction detail
+router.get('/transactions/:id', adminAuth, async (req, res) => {
+  try {
+    const tx = await Transaction.findById(req.params.id)
+      .populate('userId', 'username email phone')
+      .populate('tournamentId', 'title game gameMode entryFee prizePool')
+      .populate('processedBy', 'username')
+    if (!tx) return error(res, 'Transaction not found', 404)
+    return success(res, tx)
+  } catch (err) {
+    return error(res, 'Failed to get transaction', 500, err.message)
+  }
+})
+
 // Pending withdrawals
 router.get('/withdrawals/pending', adminAuth, async (req, res) => {
   try {

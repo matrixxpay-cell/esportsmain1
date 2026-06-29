@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, User, Mail, Phone, Calendar, Globe, Trophy, Wallet, Shield, ShieldOff, CheckCircle, XCircle, Clock, IndianRupee, Gamepad2 } from 'lucide-react'
+import { ArrowLeft, User, Mail, Phone, Calendar, Globe, Trophy, Wallet, Shield, ShieldOff, CheckCircle, XCircle, Clock, IndianRupee, Gamepad2, X, Hash, FileText, Receipt, CreditCard } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 import { adminService } from '@/services/adminService'
 import toast from 'react-hot-toast'
 
@@ -31,6 +32,7 @@ export default function UserDetailPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'tournaments' | 'transactions'>('tournaments')
+  const [selectedTx, setSelectedTx] = useState<any>(null)
 
   useEffect(() => {
     adminService.getUserDetail(id as string)
@@ -232,7 +234,7 @@ export default function UserDetailPage() {
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
                   {transactions.map((tx: any) => (
-                    <tr key={tx._id} className="hover:bg-white/[0.02]">
+                    <tr key={tx._id} className="hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedTx(tx)}>
                       <td className="p-4 text-slate-400 whitespace-nowrap">{new Date(tx.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                       <td className="p-4">
                         <span className={`text-xs font-medium capitalize ${TX_TYPE_COLORS[tx.type] || 'text-slate-400'}`}>
@@ -259,6 +261,61 @@ export default function UserDetailPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Transaction Detail Modal */}
+      <AnimatePresence>
+        {selectedTx && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setSelectedTx(null)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[480px] max-h-[80vh] overflow-y-auto glass-card rounded-2xl z-50 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-saffron" /> Transaction Details
+                </h3>
+                <button onClick={() => setSelectedTx(null)} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03]">
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase ${TX_TYPE_COLORS[selectedTx.type] ? `bg-white/10 ${TX_TYPE_COLORS[selectedTx.type]}` : 'bg-slate-400/15 text-slate-400'}`}>
+                    {selectedTx.type?.replace('_', ' ')}
+                  </span>
+                  <span className={`font-rajdhani font-bold text-2xl ${selectedTx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {selectedTx.amount >= 0 ? '+' : ''}₹{Math.abs(selectedTx.amount).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <TxRow label="Transaction ID" value={selectedTx._id} mono />
+                <TxRow label="Date" value={new Date(selectedTx.createdAt).toLocaleString('en-IN')} />
+                <TxRow label="Description" value={selectedTx.description || '—'} />
+                <TxRow label="Status" value={
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    selectedTx.status === 'completed' ? 'bg-green-400/10 text-green-400' :
+                    selectedTx.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400' :
+                    'bg-red-400/10 text-red-400'
+                  }`}>{selectedTx.status}</span>
+                } />
+                <TxRow label="Balance After" value={selectedTx.balanceAfter != null ? `₹${selectedTx.balanceAfter.toLocaleString('en-IN')}` : '—'} />
+                {selectedTx.razorpayOrderId && <TxRow label="Razorpay Order" value={selectedTx.razorpayOrderId} mono />}
+                {selectedTx.razorpayPaymentId && <TxRow label="Razorpay Payment" value={selectedTx.razorpayPaymentId} mono />}
+                {selectedTx.upiId && <TxRow label="UPI ID" value={selectedTx.upiId} />}
+                {selectedTx.reference && <TxRow label="Reference" value={selectedTx.reference} mono />}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function TxRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
+  return (
+    <div className="flex items-start justify-between py-2 border-b border-white/[0.04] last:border-0">
+      <span className="text-slate-500 text-xs">{label}</span>
+      <span className={`text-xs text-right max-w-[60%] ${mono ? 'font-mono break-all text-slate-300' : 'text-white'}`}>{value}</span>
     </div>
   )
 }

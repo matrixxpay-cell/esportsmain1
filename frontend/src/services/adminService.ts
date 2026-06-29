@@ -31,6 +31,11 @@ export const adminService = {
     return res.data
   },
 
+  getTransactionDetail: async (id: string) => {
+    const res = await api.get(`/admin/transactions/${id}`)
+    return res.data.data
+  },
+
   getPendingWithdrawals: async () => {
     const res = await api.get('/admin/withdrawals/pending')
     return res.data.data

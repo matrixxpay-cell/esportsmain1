@@ -14,7 +14,7 @@ const SIDEBAR_LINKS = [
   { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet', badge: null },
   { icon: BarChart2, label: 'Leaderboard', href: '/dashboard/leaderboard', badge: null },
   { icon: User, label: 'My Profile', href: '/dashboard/profile', badge: null },
-  { icon: Bell, label: 'Notifications', href: '/dashboard/notifications', badge: null },
+  { icon: Bell, label: 'Notifications', href: '/dashboard/notifications', badge: null, mobileHidden: true },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile bottom nav — improved */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 mobile-nav-blur">
         <div className="flex items-center justify-around py-1.5 px-2 max-w-lg mx-auto">
-          {SIDEBAR_LINKS.slice(0, 5).map(({ icon: Icon, label, href }) => {
+          {SIDEBAR_LINKS.filter(l => !(l as any).mobileHidden).map(({ icon: Icon, label, href }) => {
             const isActive = pathname === href
             return (
               <Link key={href} href={href}
