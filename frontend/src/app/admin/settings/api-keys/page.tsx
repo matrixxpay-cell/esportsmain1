@@ -32,9 +32,18 @@ export default function ApiKeysPage() {
     setSaving(true)
     try {
       const res = await api.put('/admin/settings/api_keys', form)
-      setForm(res.data.data || form)
+      const saved = res.data.data || {}
+      setForm(prev => {
+        const merged = { ...saved }
+        for (const f of FIELDS) {
+          if (f.sensitive && saved[f.key] === '••••••••' && prev[f.key] && prev[f.key] !== '••••••••') {
+            merged[f.key] = prev[f.key]
+          }
+        }
+        return merged
+      })
       toast.success('API keys saved')
-    } catch (e: any) { toast.error(e.message || 'Failed') }
+    } catch (e: any) { toast.error(e?.response?.data?.message || e?.message || 'Failed') }
     finally { setSaving(false) }
   }
 

@@ -40,9 +40,18 @@ export default function EmailSettingsPage() {
     setSaving(true)
     try {
       const res = await api.put('/admin/settings/email', form)
-      setForm(res.data.data || form)
+      const saved = res.data.data || {}
+      setForm(prev => {
+        const merged = { ...saved }
+        for (const f of SMTP_FIELDS) {
+          if (f.sensitive && saved[f.key] === '••••••••' && prev[f.key] && prev[f.key] !== '••••••••') {
+            merged[f.key] = prev[f.key]
+          }
+        }
+        return merged
+      })
       toast.success('Email settings saved')
-    } catch (e: any) { toast.error(e.message || 'Failed') }
+    } catch (e: any) { toast.error(e?.response?.data?.message || e?.message || 'Failed') }
     finally { setSaving(false) }
   }
 
