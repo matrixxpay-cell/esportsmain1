@@ -183,6 +183,12 @@ router.post('/settings/email/test', adminAuth, async (req, res) => {
     const { sendEmail } = require('../utils/email')
     const { to, template } = req.body
     if (!to) return error(res, 'Recipient email required', 400)
+
+    const emailHost = await PlatformConfig.get('email_host')
+    const emailUser = await PlatformConfig.get('email_user')
+    const emailPass = await PlatformConfig.get('email_pass')
+    console.log('Email config check:', { host: emailHost, user: emailUser, hasPass: !!emailPass, passLength: emailPass?.length, passMasked: emailPass === '••••••••' })
+
     await sendEmail({
       to,
       subject: 'Test Email from EsportsG',
@@ -195,7 +201,8 @@ router.post('/settings/email/test', adminAuth, async (req, res) => {
     })
     return success(res, null, `Test email sent to ${to}`)
   } catch (err) {
-    return error(res, 'Failed to send test email', 500, err.message)
+    console.error('Test email error:', err.message, err.code, err.responseCode)
+    return error(res, `Failed to send test email: ${err.message}`, 500)
   }
 })
 

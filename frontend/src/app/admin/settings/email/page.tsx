@@ -59,9 +59,12 @@ export default function EmailSettingsPage() {
     if (!testEmail.trim()) { toast.error('Enter email'); return }
     setSending(true)
     try {
-      await api.post('/admin/settings/email/test', { to: testEmail.trim() })
+      await api.post('/admin/settings/email/test', { to: testEmail.trim() }, { timeout: 30000 })
       toast.success(`Test email sent to ${testEmail}`)
-    } catch (e: any) { toast.error(e.message || 'Failed to send') }
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to send'
+      toast.error(msg)
+    }
     finally { setSending(false) }
   }
 
