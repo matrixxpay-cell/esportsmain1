@@ -1,22 +1,30 @@
 const nodemailer = require('nodemailer')
+const PlatformConfig = require('../models/PlatformConfig')
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: process.env.EMAIL_SECURE === 'true',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-})
+const getTransporter = async () => {
+  const host = await PlatformConfig.get('email_host') || process.env.EMAIL_HOST
+  const port = await PlatformConfig.get('email_port') || process.env.EMAIL_PORT || '587'
+  const secure = await PlatformConfig.get('email_secure') || process.env.EMAIL_SECURE || 'false'
+  const user = await PlatformConfig.get('email_user') || process.env.EMAIL_USER
+  const pass = await PlatformConfig.get('email_pass') || process.env.EMAIL_PASS
+
+  if (!host || !user || !pass || pass === '••••••••') {
+    throw new Error('Email not configured. Go to Admin > Settings > Email to set SMTP credentials.')
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port: parseInt(port),
+    secure: secure === 'true',
+    auth: { user, pass },
+  })
+}
 
 const sendEmail = async ({ to, subject, html }) => {
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to,
-    subject,
-    html,
-  })
+  const fromDb = await PlatformConfig.get('email_from')
+  const from = fromDb || process.env.EMAIL_FROM
+  const transporter = await getTransporter()
+  await transporter.sendMail({ from, to, subject, html })
 }
 
 const emailTemplates = {
