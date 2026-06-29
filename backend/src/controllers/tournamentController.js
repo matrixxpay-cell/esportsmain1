@@ -176,7 +176,11 @@ exports.registerForTournament = async (req, res) => {
     })
     return success(res, { orderId: order.id, amount: order.amount, currency: order.currency })
   } catch (err) {
-    return error(res, 'Registration failed', 500, err.message)
+    console.error('Registration error:', err.message)
+    const msg = err.message?.includes('razorpay') || err.message?.includes('key_id') || err.message?.includes('auth')
+      ? 'Payment gateway not configured. Contact admin.'
+      : `Registration failed: ${err.message}`
+    return error(res, msg, 500, err.message)
   }
 }
 
