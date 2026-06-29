@@ -51,8 +51,8 @@ export default function RegisterPage() {
       login(res.user, res.token)
       toast.success('Account created! 🎮 Please verify your email.')
       router.push('/auth/verify-email')
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Registration failed. Please try again.'
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Registration failed. Please try again.'
       toast.error(msg)
     } finally {
       setIsLoading(false)

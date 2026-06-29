@@ -41,13 +41,12 @@ exports.register = async (req, res) => {
       await Wallet.findOneAndUpdate({ userId: referredBy }, { $inc: { bonusBalance: 50 } })
     }
 
-    // Send verification email
-    const frontendUrl = await getFrontendUrl()
-    const verifyUrl = `${frontendUrl}/auth/verify-email?token=${verificationToken}`
-    try {
+    // Send verification email (fire and forget — don't block registration)
+    getFrontendUrl().then(frontendUrl => {
+      const verifyUrl = `${frontendUrl}/auth/verify-email?token=${verificationToken}`
       const { subject, html } = emailTemplates.verifyEmail(username, verifyUrl)
-      await sendEmail({ to: email, subject, html })
-    } catch { /* Email error shouldn't block registration */ }
+      return sendEmail({ to: email, subject, html })
+    }).catch(emailErr => console.error('Verification email failed:', emailErr.message))
 
     const { token } = generateTokens(user._id)
     return success(res, {
@@ -128,7 +127,7 @@ exports.forgotPassword = async (req, res) => {
     const frontendUrl = await getFrontendUrl()
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${resetToken}`
     const { subject, html } = emailTemplates.resetPassword(user.username, resetUrl)
-    await sendEmail({ to: email, subject, html })
+    sendEmail({ to: email, subject, html }).catch(err => console.error('Reset email failed:', err.message))
 
     return success(res, null, 'Password reset link sent to your email.')
   } catch (err) {
