@@ -1,13 +1,8 @@
-const Razorpay = require('razorpay')
 const crypto = require('crypto')
 const Wallet = require('../models/Wallet')
 const Transaction = require('../models/Transaction')
 const { success, error, paginate } = require('../utils/response')
-
-const getRazorpay = () => new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder',
-})
+const { getRazorpay, getRazorpaySecret } = require('../utils/razorpay')
 
 exports.getBalance = async (req, res) => {
   try {
@@ -31,10 +26,11 @@ exports.createDepositOrder = async (req, res) => {
     if (!amount || amount < 10) return error(res, 'Minimum deposit is ₹10', 400)
     if (amount > 50000) return error(res, 'Maximum single deposit is ₹50,000', 400)
 
-    const order = await getRazorpay().orders.create({
+    const rzp = await getRazorpay()
+    const order = await rzp.orders.create({
       amount: Math.round(amount * 100),
       currency: 'INR',
-      receipt: `dep_${req.user._id}_${Date.now()}`,
+      receipt: `d${req.user._id}`.slice(0, 40),
     })
     return success(res, { orderId: order.id, amount: order.amount, currency: order.currency })
   } catch (err) {
@@ -46,8 +42,9 @@ exports.confirmDeposit = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body
 
+    const secret = await getRazorpaySecret()
     const body = razorpay_order_id + '|' + razorpay_payment_id
-    const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex')
+    const expected = crypto.createHmac('sha256', secret).update(body).digest('hex')
     if (expected !== razorpay_signature) return error(res, 'Payment verification failed', 400)
 
     const existingTx = await Transaction.findOne({ razorpayPaymentId: razorpay_payment_id })
