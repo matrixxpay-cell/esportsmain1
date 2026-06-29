@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Key, Eye, EyeOff, Save } from 'lucide-react'
+import { ArrowLeft, Key, Eye, EyeOff, Save, Zap, CheckCircle, XCircle } from 'lucide-react'
 import api from '@/services/api'
 import toast from 'react-hot-toast'
 
@@ -21,6 +21,8 @@ export default function ApiKeysPage() {
   const [visible, setVisible] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
   useEffect(() => {
     api.get('/admin/settings/api_keys')
@@ -92,6 +94,35 @@ export default function ApiKeysPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Razorpay Test */}
+          <div className="glass-card rounded-2xl p-6 border border-neon-blue/20">
+            <h3 className="font-semibold text-white mb-1 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-neon-blue" /> Test Razorpay Keys
+            </h3>
+            <p className="text-slate-500 text-xs mb-3">Creates a ₹1 test order to verify your keys are valid</p>
+            <div className="flex items-center gap-3">
+              <button onClick={async () => {
+                setTesting(true); setTestResult(null)
+                try {
+                  const res = await api.post('/admin/settings/api_keys/test')
+                  setTestResult({ ok: true, msg: res.data.message || 'Keys are valid!' })
+                } catch (e: any) {
+                  setTestResult({ ok: false, msg: e?.response?.data?.message || e?.message || 'Test failed' })
+                }
+                setTesting(false)
+              }} disabled={testing}
+                className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 whitespace-nowrap">
+                {testing ? 'Testing...' : 'Test Keys'}
+              </button>
+              {testResult && (
+                <div className={`flex items-center gap-2 text-sm ${testResult.ok ? 'text-green-400' : 'text-red-400'}`}>
+                  {testResult.ok ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                  {testResult.msg}
+                </div>
+              )}
             </div>
           </div>
 

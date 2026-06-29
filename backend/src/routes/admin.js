@@ -223,6 +223,22 @@ router.put('/settings/:category', adminAuth, async (req, res) => {
   }
 })
 
+// Razorpay test payment
+router.post('/settings/api_keys/test', adminAuth, async (req, res) => {
+  try {
+    const { getRazorpay } = require('../utils/razorpay')
+    const rzp = await getRazorpay()
+    const order = await rzp.orders.create({
+      amount: 100,
+      currency: 'INR',
+      receipt: `test_${Date.now()}`,
+    })
+    return success(res, { orderId: order.id, amount: order.amount, status: order.status }, 'Razorpay keys are valid! Test order created.')
+  } catch (err) {
+    return error(res, `Razorpay test failed: ${err.message}`, 500)
+  }
+})
+
 // Email template preview/test
 router.post('/settings/email/test', adminAuth, async (req, res) => {
   try {
