@@ -9,7 +9,7 @@ import { tournamentService } from '@/services/tournamentService'
 
 const STATUS_LABELS: Record<string, string> = {
   ongoing: 'LIVE', registration_open: 'Open', upcoming: 'Upcoming',
-  registration_closed: 'Closed', completed: 'Ended', cancelled: 'Cancelled',
+  registration_closed: 'Closed', completed: 'Completed', cancelled: 'Cancelled',
 }
 const GAME_COLORS: Record<string, string> = {
   csgo: '#F4A418', 'mobile-legends': '#00E5FF', bgmi: '#FF6B2B',
@@ -82,6 +82,7 @@ export default function TournamentsPage() {
             <option value="ongoing">🔴 Live Now</option>
             <option value="registration_open">🟢 Registration Open</option>
             <option value="upcoming">🟡 Upcoming</option>
+            <option value="completed">✅ Completed</option>
           </select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
             className="input-glass py-2 px-3 text-sm rounded-xl min-w-[120px] max-w-[150px]">
@@ -123,6 +124,7 @@ export default function TournamentsPage() {
             const game = GAMES.find(g => g.id === t.game)
             const fillPercent = Math.min(100, (filled / t.maxSlots) * 100)
             const isLive = t.status === 'ongoing'
+            const isCompleted = t.status === 'completed'
 
             return (
               <motion.div key={t._id}
@@ -130,9 +132,9 @@ export default function TournamentsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.3 }}>
                 <Link href={`/dashboard/tournaments/${t._id}`}
-                  className="tournament-card-v2 block group">
+                  className={`tournament-card-v2 block group ${isCompleted ? 'opacity-75 hover:opacity-100' : ''}`}>
                   {/* Top accent bar */}
-                  <div className="h-1" style={{ background: `linear-gradient(90deg, ${color}, ${color}66)` }} />
+                  <div className="h-1" style={{ background: isCompleted ? 'linear-gradient(90deg, #64748b, #64748b66)' : `linear-gradient(90deg, ${color}, ${color}66)` }} />
 
                   <div className="p-5">
                     {/* Badges row */}
@@ -145,6 +147,10 @@ export default function TournamentsPage() {
                         <span className="badge-live flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                           LIVE
+                        </span>
+                      ) : isCompleted ? (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-slate-400/10 text-slate-400 flex items-center gap-1">
+                          <Trophy className="w-3 h-3" /> Completed
                         </span>
                       ) : (
                         <span className="text-xs text-slate-500">{STATUS_LABELS[t.status]}</span>
@@ -193,7 +199,7 @@ export default function TournamentsPage() {
                         <span className="badge-paid">₹{t.entryFee} Entry</span>
                       )}
                       <span className="flex items-center gap-1 text-saffron text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isLive ? 'View' : 'Register'} <ChevronRight className="w-3.5 h-3.5" />
+                        {isCompleted ? 'Results' : isLive ? 'View' : 'Register'} <ChevronRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
                   </div>

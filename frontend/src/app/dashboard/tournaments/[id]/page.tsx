@@ -420,14 +420,44 @@ export default function TournamentDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-5">
-            {/* Register CTA */}
+            {/* Status / Register CTA */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               className="glass-card rounded-2xl p-5">
-              {isRegistered ? (
+              {tournament.status === 'completed' ? (
+                <div className="text-center py-2">
+                  {(() => {
+                    const finalMatch = tournament.brackets?.find((m: any) => m.roundName === 'Final' && m.status === 'completed')
+                    const winnerName = finalMatch
+                      ? (finalMatch.team1?.participantIndex === finalMatch.winner ? finalMatch.team1?.teamName : finalMatch.team2?.teamName)
+                      : null
+                    const myTeam = tournament.participants?.find((p: any) =>
+                      p.userId === user?._id || p.userId?._id === user?._id || p.userId?.toString() === user?._id
+                    )
+                    const myIndex = tournament.participants?.indexOf(myTeam)
+                    const isWinner = finalMatch && finalMatch.winner === myIndex
+                    return (
+                      <>
+                        <Trophy className={`w-10 h-10 mx-auto mb-2 ${isWinner ? 'text-yellow-400' : 'text-slate-400'}`} />
+                        <p className="font-gaming font-bold text-lg text-white mb-1">Tournament Completed</p>
+                        {winnerName && (
+                          <p className="text-yellow-400 font-semibold text-sm mb-1">🏆 Winner: {winnerName}</p>
+                        )}
+                        {isRegistered && (
+                          <p className={`text-xs mt-1 ${isWinner ? 'text-yellow-400' : 'text-slate-500'}`}>
+                            {isWinner ? 'Congratulations! You won!' : 'Better luck next time!'}
+                          </p>
+                        )}
+                      </>
+                    )
+                  })()}
+                </div>
+              ) : isRegistered ? (
                 <div className="text-center py-2">
                   <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-2" />
                   <p className="text-green-400 font-semibold">You're Registered!</p>
-                  <p className="text-slate-500 text-xs mt-1">Room ID will be shared before match starts</p>
+                  <p className="text-slate-500 text-xs mt-1">
+                    {tournament.status === 'ongoing' ? 'Tournament is Live — check your bracket progress below' : 'Room ID will be shared before match starts'}
+                  </p>
                 </div>
               ) : canRegister ? (
                 <>
@@ -447,7 +477,6 @@ export default function TournamentDetailPage() {
                   <AlertCircle className="w-10 h-10 text-slate-500 mx-auto mb-2" />
                   <p className="text-slate-400 font-medium text-sm">
                     {tournament.status === 'ongoing' ? 'Tournament is Live' :
-                     tournament.status === 'completed' ? 'Tournament Ended' :
                      tournament.status === 'registration_closed' ? 'Registration Closed' :
                      filled >= tournament.maxSlots ? 'Tournament Full' : 'Registration Not Open'}
                   </p>
