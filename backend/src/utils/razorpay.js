@@ -2,11 +2,23 @@ const Razorpay = require('razorpay')
 const PlatformConfig = require('../models/PlatformConfig')
 
 const getRazorpayConfig = async () => {
+  const envKeyId = process.env.RAZORPAY_KEY_ID
+  const envKeySecret = process.env.RAZORPAY_KEY_SECRET
+
+  if (envKeyId && envKeySecret) {
+    return { key_id: envKeyId, key_secret: envKeySecret }
+  }
+
   const dbKeyId = await PlatformConfig.get('razorpay_key_id')
   const dbKeySecret = await PlatformConfig.get('razorpay_key_secret')
+
+  if (dbKeyId && dbKeySecret && dbKeySecret !== '••••••••') {
+    return { key_id: dbKeyId, key_secret: dbKeySecret }
+  }
+
   return {
-    key_id: dbKeyId || process.env.RAZORPAY_KEY_ID || 'placeholder',
-    key_secret: dbKeySecret || process.env.RAZORPAY_KEY_SECRET || 'placeholder',
+    key_id: envKeyId || dbKeyId || 'placeholder',
+    key_secret: envKeySecret || dbKeySecret || 'placeholder',
   }
 }
 
@@ -20,4 +32,9 @@ const getRazorpaySecret = async () => {
   return config.key_secret
 }
 
-module.exports = { getRazorpay, getRazorpaySecret, getRazorpayConfig }
+const getRazorpayKeyId = async () => {
+  const config = await getRazorpayConfig()
+  return config.key_id
+}
+
+module.exports = { getRazorpay, getRazorpaySecret, getRazorpayConfig, getRazorpayKeyId }
