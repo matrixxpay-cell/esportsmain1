@@ -2,24 +2,14 @@ const Razorpay = require('razorpay')
 const PlatformConfig = require('../models/PlatformConfig')
 
 const getRazorpayConfig = async () => {
-  const envKeyId = process.env.RAZORPAY_KEY_ID
-  const envKeySecret = process.env.RAZORPAY_KEY_SECRET
+  const keyId = await PlatformConfig.get('razorpay_key_id')
+  const keySecret = await PlatformConfig.get('razorpay_key_secret')
 
-  if (envKeyId && envKeySecret) {
-    return { key_id: envKeyId, key_secret: envKeySecret }
+  if (!keyId || !keySecret || keySecret === '••••••••') {
+    throw new Error('Razorpay keys not configured. Go to Admin > Settings > API Keys to set them.')
   }
 
-  const dbKeyId = await PlatformConfig.get('razorpay_key_id')
-  const dbKeySecret = await PlatformConfig.get('razorpay_key_secret')
-
-  if (dbKeyId && dbKeySecret && dbKeySecret !== '••••••••') {
-    return { key_id: dbKeyId, key_secret: dbKeySecret }
-  }
-
-  return {
-    key_id: envKeyId || dbKeyId || 'placeholder',
-    key_secret: envKeySecret || dbKeySecret || 'placeholder',
-  }
+  return { key_id: keyId, key_secret: keySecret }
 }
 
 const getRazorpay = async () => {

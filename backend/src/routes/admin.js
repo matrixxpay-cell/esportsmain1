@@ -159,9 +159,12 @@ router.put('/settings/:category', adminAuth, async (req, res) => {
 
     const sensitiveKeys = ['razorpay_key_secret', 'cloudinary_api_secret', 'jwt_secret', 'jwt_refresh_secret', 'email_pass']
     const updates = req.body
+    let savedCount = 0
     for (const [key, value] of Object.entries(updates)) {
-      if (sensitiveKeys.includes(key) && value === '••••••••') continue
+      if (sensitiveKeys.includes(key) && (value === '••••••••' || !value)) continue
+      if (typeof value === 'string' && !value.trim()) continue
       await PlatformConfig.set(key, value, category, req.user._id)
+      savedCount++
     }
     const data = await PlatformConfig.getByCategory(category)
 
