@@ -172,7 +172,7 @@ exports.registerForTournament = async (req, res) => {
     const order = await getRazorpay().orders.create({
       amount: tournament.entryFee * 100,
       currency: 'INR',
-      receipt: `t_${tournament._id}_${req.user._id}`,
+      receipt: `t${tournament._id}`.slice(0, 40),
     })
     return success(res, { orderId: order.id, amount: order.amount, currency: order.currency })
   } catch (err) {
