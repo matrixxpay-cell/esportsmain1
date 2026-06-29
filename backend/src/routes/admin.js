@@ -73,6 +73,27 @@ router.put('/users/:id/unban', adminAuth, async (req, res) => {
   }
 })
 
+// All transactions
+router.get('/transactions', adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, type, status } = req.query
+    const query = {}
+    if (type) query.type = type
+    if (status) query.status = status
+    const total = await Transaction.countDocuments(query)
+    const transactions = await Transaction.find(query)
+      .populate('userId', 'username email')
+      .populate('tournamentId', 'title game')
+      .populate('processedBy', 'username')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+    return paginate(res, transactions, { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) })
+  } catch (err) {
+    return error(res, 'Failed to get transactions', 500, err.message)
+  }
+})
+
 // Pending withdrawals
 router.get('/withdrawals/pending', adminAuth, async (req, res) => {
   try {

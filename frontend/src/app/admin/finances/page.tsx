@@ -2,15 +2,39 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { IndianRupee, TrendingUp, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { IndianRupee, TrendingUp, Clock, CheckCircle, XCircle, RefreshCw, Receipt, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import toast from 'react-hot-toast'
+
+const TYPE_COLORS: Record<string, string> = {
+  entry_fee: 'bg-green-400/15 text-green-400',
+  withdrawal: 'bg-yellow-400/15 text-yellow-400',
+  prize: 'bg-neon-purple/15 text-neon-purple',
+  deposit: 'bg-neon-blue/15 text-neon-blue',
+  refund: 'bg-red-400/15 text-red-400',
+  bonus: 'bg-saffron/15 text-saffron',
+  referral: 'bg-pink-400/15 text-pink-400',
+  adjustment: 'bg-slate-400/15 text-slate-400',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  completed: 'bg-green-400/15 text-green-400',
+  pending: 'bg-yellow-400/15 text-yellow-400',
+  failed: 'bg-red-400/15 text-red-400',
+  reversed: 'bg-orange-400/15 text-orange-400',
+}
 
 export default function AdminFinancesPage() {
   const [withdrawals, setWithdrawals] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [txPage, setTxPage] = useState(1)
+  const [txPages, setTxPages] = useState(1)
+  const [txTotal, setTxTotal] = useState(0)
+  const [txType, setTxType] = useState('')
+  const [txStatus, setTxStatus] = useState('')
   const [loading, setLoading] = useState(true)
-
+  const [txLoading, setTxLoading] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -22,7 +46,20 @@ export default function AdminFinancesPage() {
     setLoading(false)
   }
 
+  const loadTransactions = async (page = 1) => {
+    setTxLoading(true)
+    try {
+      const res = await adminService.getTransactions({ page, type: txType || undefined, status: txStatus || undefined })
+      setTransactions(res.data || [])
+      setTxPage(res.pagination?.page || 1)
+      setTxPages(res.pagination?.pages || 1)
+      setTxTotal(res.pagination?.total || 0)
+    } catch { toast.error('Failed to load transactions') }
+    setTxLoading(false)
+  }
+
   useEffect(() => { load() }, [])
+  useEffect(() => { loadTransactions(1) }, [txType, txStatus])
 
   const approve = async (id: string) => {
     try {
@@ -45,9 +82,9 @@ export default function AdminFinancesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="gaming-heading text-2xl sm:text-3xl mb-1">Finances</h1>
-          <p className="text-slate-400 text-sm">Revenue and withdrawal management</p>
+          <p className="text-slate-400 text-sm">Revenue, payments and withdrawal management</p>
         </div>
-        <button onClick={load} className="btn-ghost flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
+        <button onClick={() => { load(); loadTransactions(txPage) }} className="btn-ghost flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
       </div>
@@ -70,6 +107,120 @@ export default function AdminFinancesPage() {
         ))}
       </div>
 
+      {/* All Transactions */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+        className="glass-card rounded-2xl p-5 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-saffron" />
+            <h2 className="font-semibold text-white">All Transactions</h2>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-saffron/15 text-saffron">{txTotal} total</span>
+          </div>
+          <div className="flex gap-2">
+            <select value={txType} onChange={e => setTxType(e.target.value)}
+              className="text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 px-3 py-1.5 focus:outline-none focus:border-saffron/50">
+              <option value="">All Types</option>
+              <option value="entry_fee">Entry Fee</option>
+              <option value="withdrawal">Withdrawal</option>
+              <option value="prize">Prize</option>
+              <option value="deposit">Deposit</option>
+              <option value="refund">Refund</option>
+              <option value="bonus">Bonus</option>
+              <option value="referral">Referral</option>
+            </select>
+            <select value={txStatus} onChange={e => setTxStatus(e.target.value)}
+              className="text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 px-3 py-1.5 focus:outline-none focus:border-saffron/50">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+              <option value="reversed">Reversed</option>
+            </select>
+          </div>
+        </div>
+
+        {txLoading ? (
+          <div className="text-center py-10 text-slate-500">Loading transactions...</div>
+        ) : transactions.length === 0 ? (
+          <div className="text-center py-10 text-slate-500">No transactions found</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-slate-500 text-xs border-b border-white/5">
+                    <th className="text-left pb-3 font-medium">Date</th>
+                    <th className="text-left pb-3 font-medium">User</th>
+                    <th className="text-left pb-3 font-medium">Type</th>
+                    <th className="text-left pb-3 font-medium">Description</th>
+                    <th className="text-right pb-3 font-medium">Amount</th>
+                    <th className="text-right pb-3 font-medium">Balance</th>
+                    <th className="text-left pb-3 font-medium">Status</th>
+                    <th className="text-left pb-3 font-medium">Reference</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04]">
+                  {transactions.map((tx: any) => (
+                    <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3 text-slate-400 text-xs whitespace-nowrap">
+                        {new Date(tx.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <div className="text-slate-600 text-[10px]">{new Date(tx.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </td>
+                      <td className="py-3">
+                        <div className="text-white text-xs font-medium">{tx.userId?.username || '—'}</div>
+                        <div className="text-slate-500 text-[10px]">{tx.userId?.email || ''}</div>
+                      </td>
+                      <td className="py-3">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${TYPE_COLORS[tx.type] || 'bg-slate-400/15 text-slate-400'}`}>
+                          {tx.type?.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="py-3 text-slate-300 text-xs max-w-[200px] truncate">
+                        {tx.description}
+                        {tx.tournamentId?.title && (
+                          <div className="text-[10px] text-saffron/70">{tx.tournamentId.title}</div>
+                        )}
+                      </td>
+                      <td className={`py-3 text-right font-rajdhani font-bold text-sm ${tx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {tx.amount >= 0 ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 text-right text-xs text-slate-500">
+                        ₹{tx.balanceAfter?.toLocaleString('en-IN') ?? '—'}
+                      </td>
+                      <td className="py-3">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[tx.status] || 'bg-slate-400/15 text-slate-400'}`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-[10px] text-slate-600 max-w-[120px] truncate">
+                        {tx.razorpayPaymentId || tx.razorpayOrderId || tx.reference || tx.upiId || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {txPages > 1 && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
+                <span className="text-xs text-slate-500">Page {txPage} of {txPages}</span>
+                <div className="flex gap-2">
+                  <button onClick={() => loadTransactions(txPage - 1)} disabled={txPage <= 1}
+                    className="p-2 rounded-lg glass-card text-slate-400 hover:text-white disabled:opacity-30 transition-colors">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => loadTransactions(txPage + 1)} disabled={txPage >= txPages}
+                    className="p-2 rounded-lg glass-card text-slate-400 hover:text-white disabled:opacity-30 transition-colors">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </motion.div>
+
+      {/* Withdrawal Requests */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-semibold text-white">Withdrawal Requests</h2>

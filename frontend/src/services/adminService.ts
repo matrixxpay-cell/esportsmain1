@@ -21,6 +21,11 @@ export const adminService = {
     return res.data
   },
 
+  getTransactions: async (params: { page?: number; type?: string; status?: string } = {}) => {
+    const res = await api.get('/admin/transactions', { params })
+    return res.data
+  },
+
   getPendingWithdrawals: async () => {
     const res = await api.get('/admin/withdrawals/pending')
     return res.data.data
