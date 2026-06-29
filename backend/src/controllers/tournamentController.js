@@ -55,8 +55,10 @@ exports.getTournament = async (req, res) => {
 exports.createTournament = async (req, res) => {
   try {
     const { title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes } = req.body
+    const autoStatus = registrationDeadline && new Date(registrationDeadline) > new Date() ? 'registration_open' : 'upcoming'
     const tournament = await Tournament.create({
       title, game, gameMode, type, entryFee, prizePool, maxSlots, startDate, endDate, description, rules, prizeDistribution, bannerImage, isFeatured, registrationDeadline, maxSubstitutes,
+      status: autoStatus,
       createdBy: req.user._id,
     })
     return success(res, tournament, 'Tournament created', 201)

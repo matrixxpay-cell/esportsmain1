@@ -96,7 +96,7 @@ tournamentSchema.index({ isFeatured: 1 })
 
 tournamentSchema.methods.isRegistrationOpen = function () {
   const filled = this.filledSlots || this.participants?.length || 0
-  return this.status === 'registration_open' &&
+  return ['registration_open', 'upcoming'].includes(this.status) &&
     filled < this.maxSlots &&
     new Date() < new Date(this.registrationDeadline)
 }
