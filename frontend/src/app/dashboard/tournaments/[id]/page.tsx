@@ -544,8 +544,10 @@ export default function TournamentDetailPage() {
                           const oppName = isTeam1 ? (match.team2?.teamName || 'TBD') : (match.team1?.teamName || 'TBD')
                           const myScore = isTeam1 ? match.team1?.score : match.team2?.score
                           const oppScore = isTeam1 ? match.team2?.score : match.team1?.score
-                          const won = match.winner === (isTeam1 ? 'team1' : 'team2')
-                          const lost = match.winner && !won
+                          const matchDone = match.status === 'completed' || match.winner !== undefined && match.winner !== null
+                          const myParticipantIndex = isTeam1 ? match.team1?.participantIndex : match.team2?.participantIndex
+                          const won = matchDone && match.winner === myParticipantIndex
+                          const lost = matchDone && !won
                           const isBye = match.isBye
 
                           return (
@@ -574,7 +576,7 @@ export default function TournamentDetailPage() {
                               ) : (
                                 <div className="flex items-center gap-2 text-sm">
                                   <span className={`font-medium ${won ? 'text-green-400' : lost ? 'text-red-400' : 'text-white'}`}>{myName}</span>
-                                  {match.winner && (
+                                  {matchDone && (
                                     <span className="text-xs text-slate-500">{myScore ?? 0} - {oppScore ?? 0}</span>
                                   )}
                                   <ChevronRight className="w-3 h-3 text-slate-600" />
