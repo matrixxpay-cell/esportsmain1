@@ -1,9 +1,15 @@
 const crypto = require('crypto')
 const User = require('../models/User')
 const Wallet = require('../models/Wallet')
+const PlatformConfig = require('../models/PlatformConfig')
 const { generateTokens } = require('../utils/jwt')
 const { sendEmail, emailTemplates } = require('../utils/email')
 const { success, error } = require('../utils/response')
+
+const getFrontendUrl = async () => {
+  const dbVal = await PlatformConfig.get('frontend_url')
+  return dbVal || process.env.FRONTEND_URL || 'http://localhost:3000'
+}
 
 exports.register = async (req, res) => {
   try {
@@ -36,7 +42,8 @@ exports.register = async (req, res) => {
     }
 
     // Send verification email
-    const verifyUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`
+    const frontendUrl = await getFrontendUrl()
+    const verifyUrl = `${frontendUrl}/auth/verify-email?token=${verificationToken}`
     try {
       const { subject, html } = emailTemplates.verifyEmail(username, verifyUrl)
       await sendEmail({ to: email, subject, html })
@@ -118,7 +125,8 @@ exports.forgotPassword = async (req, res) => {
     user.passwordResetExpires = Date.now() + 60 * 60 * 1000 // 1 hour
     await user.save()
 
-    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`
+    const frontendUrl = await getFrontendUrl()
+    const resetUrl = `${frontendUrl}/auth/reset-password?token=${resetToken}`
     const { subject, html } = emailTemplates.resetPassword(user.username, resetUrl)
     await sendEmail({ to: email, subject, html })
 

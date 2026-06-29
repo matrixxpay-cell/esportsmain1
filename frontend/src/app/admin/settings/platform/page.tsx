@@ -8,6 +8,7 @@ import api from '@/services/api'
 import toast from 'react-hot-toast'
 
 const FIELDS = [
+  { key: 'frontend_url', label: 'Frontend URL', placeholder: 'https://esportsg.in', type: 'url' },
   { key: 'platform_name', label: 'Platform Name', placeholder: 'EsportsG', type: 'text' },
   { key: 'platform_tagline', label: 'Tagline', placeholder: 'Ab Nahi Khelega India Toh Kab Khelega?', type: 'text' },
   { key: 'platform_description', label: 'Short Description', placeholder: 'India Ka Apna Esports Platform', type: 'text' },
