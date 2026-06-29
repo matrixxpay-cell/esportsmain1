@@ -23,18 +23,19 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
-// Handle 401 — auto logout
+// Handle 401 — auto logout only for auth endpoints
 api.interceptors.response.use(
   (res) => res,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
+      const url = error.config?.url || ''
+      const isAuthEndpoint = !url.includes('/register') && !url.includes('/confirm-payment') && !url.includes('/content/')
+      if (isAuthEndpoint && typeof window !== 'undefined') {
         localStorage.removeItem('auth-storage')
         window.location.href = '/auth/login'
       }
     }
-    const msg = (error.response?.data as { message?: string })?.message || error.message
-    return Promise.reject(new Error(msg))
+    return Promise.reject(error)
   }
 )
 
