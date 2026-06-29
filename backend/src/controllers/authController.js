@@ -27,8 +27,12 @@ exports.register = async (req, res) => {
     }
 
     const verificationToken = crypto.randomBytes(32).toString('hex')
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const user = await User.create({
       username, email, phone, password, referredBy,
+      registrationIp: clientIp,
+      lastLoginIp: clientIp,
+      lastLoginAt: new Date(),
       verificationToken: crypto.createHash('sha256').update(verificationToken).digest('hex'),
       verificationExpires: Date.now() + 24 * 60 * 60 * 1000,
     })
@@ -69,6 +73,11 @@ exports.login = async (req, res) => {
     if (!user.isActive || user.isBanned) {
       return error(res, 'Your account has been suspended.', 403)
     }
+
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    user.lastLoginIp = clientIp
+    user.lastLoginAt = new Date()
+    await user.save({ validateBeforeSave: false })
 
     const wallet = await Wallet.findOne({ userId: user._id })
     const { token } = generateTokens(user._id)

@@ -53,6 +53,52 @@ router.get('/users', adminAuth, async (req, res) => {
   }
 })
 
+router.get('/users/:id', adminAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password -verificationToken -passwordResetToken -notifications')
+    if (!user) return error(res, 'User not found', 404)
+
+    const wallet = await Wallet.findOne({ userId: user._id })
+    const tournaments = await Tournament.find({ 'participants.userId': user._id })
+      .select('title game gameMode status entryFee prizePool startDate participants')
+      .sort({ startDate: -1 })
+      .limit(50)
+
+    const userTournaments = tournaments.map(t => {
+      const p = t.participants.find(p => p.userId.toString() === user._id.toString())
+      return {
+        _id: t._id,
+        title: t.title,
+        game: t.game,
+        gameMode: t.gameMode,
+        status: t.status,
+        entryFee: t.entryFee,
+        prizePool: t.prizePool,
+        startDate: t.startDate,
+        teamName: p?.teamName,
+        inGameId: p?.inGameId,
+        paymentStatus: p?.paymentStatus,
+        result: p?.result,
+        joinedAt: p?.joinedAt,
+      }
+    })
+
+    const transactions = await Transaction.find({ userId: user._id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+
+    return success(res, {
+      user,
+      wallet,
+      tournaments: userTournaments,
+      transactions,
+    })
+  } catch (err) {
+    return error(res, 'Failed to get user details', 500, err.message)
+  }
+})
+
 router.put('/users/:id/ban', adminAuth, async (req, res) => {
   try {
     const { reason } = req.body

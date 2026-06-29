@@ -11,6 +11,11 @@ export const adminService = {
     return res.data
   },
 
+  getUserDetail: async (id: string) => {
+    const res = await api.get(`/admin/users/${id}`)
+    return res.data.data
+  },
+
   banUser: async (id: string, reason: string) => {
     const res = await api.put(`/admin/users/${id}/ban`, { reason })
     return res.data

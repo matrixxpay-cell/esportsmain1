@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
   googleId: String,
   discordId: String,
 
+  lastLoginIp: String,
+  lastLoginAt: Date,
+  registrationIp: String,
+
   stats: {
     tournamentsPlayed: { type: Number, default: 0 },
     tournamentsWon: { type: Number, default: 0 },

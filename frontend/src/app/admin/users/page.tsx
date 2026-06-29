@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Search, Shield, ShieldOff, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
 import { adminService } from '@/services/adminService'
@@ -12,6 +13,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
+  const router = useRouter()
 
   const load = async (pg = 1, q = '') => {
     setLoading(true)
@@ -91,7 +93,8 @@ export default function AdminUsersPage() {
               <tbody className="divide-y divide-white/[0.04]">
                 {users.map((u, i) => (
                   <motion.tr key={u._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-                    className="hover:bg-white/[0.02] transition-colors">
+                    onClick={() => router.push(`/admin/users/${u._id}`)}
+                    className="hover:bg-white/[0.02] transition-colors cursor-pointer">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-saffron/20 flex items-center justify-center text-saffron font-bold text-xs flex-shrink-0">
