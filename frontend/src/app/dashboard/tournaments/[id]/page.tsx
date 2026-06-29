@@ -40,6 +40,15 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
     Array(maxSubs).fill(null).map(() => ({ inGameId: '', zone: '', username: '', email: '', lookingUp: false }))
   )
   const [submitting, setSubmitting] = useState(false)
+  const [rzpKey, setRzpKey] = useState(process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '')
+
+  useEffect(() => {
+    if (tournament.entryFee > 0) {
+      api.get('/content/config/razorpay-key').then(r => {
+        if (r.data?.data?.keyId) setRzpKey(r.data.data.keyId)
+      }).catch(() => {})
+    }
+  }, [tournament.entryFee])
 
   const updatePlayer = (i: number, field: string, val: string | boolean) => {
     const next = [...players]; next[i] = { ...next[i], [field]: val }; setPlayers(next)
@@ -116,8 +125,6 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
       const data = res.data?.data
 
       if (data?.orderId) {
-        let rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || ''
-        try { const r = await api.get('/content/config/razorpay-key'); rzpKey = r.data?.data?.keyId || rzpKey } catch {}
         const options = {
           key: rzpKey,
           amount: data.amount,
