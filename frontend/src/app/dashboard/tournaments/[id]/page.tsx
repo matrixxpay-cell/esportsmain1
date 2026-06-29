@@ -116,8 +116,10 @@ function RegistrationModal({ tournament, user, onClose, onSuccess }: any) {
       const data = res.data?.data
 
       if (data?.orderId) {
+        let rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || ''
+        try { const r = await api.get('/content/config/razorpay-key'); rzpKey = r.data?.data?.keyId || rzpKey } catch {}
         const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+          key: rzpKey,
           amount: data.amount,
           currency: data.currency || 'INR',
           name: 'EsportsG',

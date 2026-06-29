@@ -5,11 +5,16 @@ const Transaction = require('../models/Transaction')
 const { success, error, paginate } = require('../utils/response')
 const Razorpay = require('razorpay')
 const crypto = require('crypto')
+const PlatformConfig = require('../models/PlatformConfig')
 
-const getRazorpay = () => new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder',
-})
+const getRazorpay = async () => {
+  const dbKeyId = await PlatformConfig.get('razorpay_key_id')
+  const dbKeySecret = await PlatformConfig.get('razorpay_key_secret')
+  return new Razorpay({
+    key_id: dbKeyId || process.env.RAZORPAY_KEY_ID || 'placeholder',
+    key_secret: dbKeySecret || process.env.RAZORPAY_KEY_SECRET || 'placeholder',
+  })
+}
 
 exports.getTournaments = async (req, res) => {
   try {
@@ -169,7 +174,8 @@ exports.registerForTournament = async (req, res) => {
     }
 
     // For paid, create Razorpay order
-    const order = await getRazorpay().orders.create({
+    const rzp = await getRazorpay()
+    const order = await rzp.orders.create({
       amount: tournament.entryFee * 100,
       currency: 'INR',
       receipt: `t${tournament._id}`.slice(0, 40),
@@ -189,8 +195,10 @@ exports.confirmPayment = async (req, res) => {
     if (!tournament) return error(res, 'Tournament not found', 404)
 
     // Verify signature
+    const dbSecret = await PlatformConfig.get('razorpay_key_secret')
+    const secret = dbSecret || process.env.RAZORPAY_KEY_SECRET
     const body = razorpay_order_id + '|' + razorpay_payment_id
-    const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex')
+    const expected = crypto.createHmac('sha256', secret).update(body).digest('hex')
     if (expected !== razorpay_signature) return error(res, 'Payment verification failed', 400)
 
     // Prevent duplicate payment confirmation

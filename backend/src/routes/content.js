@@ -31,4 +31,13 @@ router.get('/reviews', async (req, res) => {
   }
 })
 
+router.get('/config/razorpay-key', async (req, res) => {
+  try {
+    const keyId = await PlatformConfig.get('razorpay_key_id') || process.env.RAZORPAY_KEY_ID || ''
+    return success(res, { keyId })
+  } catch (err) {
+    return error(res, 'Failed', 500)
+  }
+})
+
 module.exports = router

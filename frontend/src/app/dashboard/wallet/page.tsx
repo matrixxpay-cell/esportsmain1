@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Wallet, ArrowDownLeft, ArrowUpRight, IndianRupee, Plus, Minus, TrendingUp, Gift, Clock, Shield } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { walletService } from '@/services/walletService'
+import api from '@/services/api'
 import toast from 'react-hot-toast'
 
 const TX_ICON: Record<string, any> = {
@@ -46,8 +47,10 @@ export default function WalletPage() {
     setSubmitting(true)
     try {
       const order = await walletService.createDepositOrder(amount)
+      let rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || ''
+      try { const r = await api.get('/content/config/razorpay-key'); rzpKey = r.data?.data?.keyId || rzpKey } catch {}
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        key: rzpKey,
         amount: order!.amount,
         currency: order!.currency || 'INR',
         name: 'EsportsG',
