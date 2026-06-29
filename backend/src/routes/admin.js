@@ -189,15 +189,19 @@ router.post('/settings/email/test', adminAuth, async (req, res) => {
     const emailPass = await PlatformConfig.get('email_pass')
     console.log('Email config check:', { host: emailHost, user: emailUser, hasPass: !!emailPass, passLength: emailPass?.length, passMasked: emailPass === '••••••••' })
 
+    const { emailWrapper } = require('../utils/email')
     await sendEmail({
       to,
       subject: 'Test Email from EsportsG',
-      html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#1a1a2e;color:#fff;padding:30px;border-radius:12px;">
-        <h2 style="color:#FF6B2B;">EsportsG Test Email</h2>
-        <p>This is a test email from your EsportsG admin panel.</p>
-        <p>Template: <strong>${template || 'default'}</strong></p>
-        <p style="color:#888;font-size:12px;">Sent at ${new Date().toLocaleString('en-IN')}</p>
-      </div>`,
+      html: emailWrapper(`
+        <h2 style="margin:0 0 8px;color:#F1F5F9;font-size:22px;font-weight:700;">Test Email ✅</h2>
+        <p style="margin:0 0 16px;color:#CBD5E1;font-size:14px;">This is a test email from your EsportsG admin panel.</p>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:16px;margin-bottom:16px;">
+          <p style="margin:0;color:#10B981;font-size:14px;font-weight:600;">✓ SMTP configuration is working</p>
+          <p style="margin:8px 0 0;color:#94A3B8;font-size:12px;">Template: ${template || 'default'}</p>
+          <p style="margin:4px 0 0;color:#94A3B8;font-size:12px;">Sent at ${new Date().toLocaleString('en-IN')}</p>
+        </div>
+      `),
     })
     return success(res, null, `Test email sent to ${to}`)
   } catch (err) {
