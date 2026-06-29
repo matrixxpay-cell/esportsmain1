@@ -20,14 +20,19 @@ export default function AdminTournamentViewPage() {
   const [roomPass, setRoomPass] = useState('')
   const [sending, setSending] = useState(false)
   const [copied, setCopied] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     adminService.getTournament(id as string).then(t => {
+      if (!t) { setError('Tournament not found'); setLoading(false); return }
       setTournament(t)
       setRoomId(t.roomId || '')
       setRoomPass(t.roomPassword || '')
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }).catch((e: any) => {
+      setError(e?.response?.data?.message || e?.message || 'Failed to load tournament')
+      setLoading(false)
+    })
   }, [id])
 
   const handleDelete = async () => {
@@ -66,7 +71,7 @@ export default function AdminTournamentViewPage() {
   if (loading) return <div className="text-slate-400 text-center py-20">Loading...</div>
   if (!tournament) return (
     <div className="text-center py-20">
-      <p className="text-slate-400 mb-4">Tournament not found.</p>
+      <p className="text-slate-400 mb-4">{error || 'Tournament not found.'}</p>
       <Link href="/admin/tournaments" className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold text-white">Back</Link>
     </div>
   )

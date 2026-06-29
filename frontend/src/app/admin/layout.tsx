@@ -23,17 +23,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const { isAuthenticated, user, logout } = useAuthStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated) { router.push('/auth/login'); return }
     if (user?.role !== 'admin' && user?.role !== 'super_admin') router.push('/dashboard/tournaments')
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, user, router, hydrated])
 
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
-  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'super_admin')) return null
+  if (!hydrated) return (
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-neon-purple/30 border-t-neon-purple rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'super_admin')) return (
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-neon-purple/30 border-t-neon-purple rounded-full animate-spin" />
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-dark-950">
