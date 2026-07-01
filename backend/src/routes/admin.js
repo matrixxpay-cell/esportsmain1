@@ -343,6 +343,26 @@ router.post('/announcements', adminAuth, async (req, res) => {
   }
 })
 
+// Homepage Stats
+router.get('/content/stats', adminAuth, async (req, res) => {
+  try {
+    const data = await PlatformConfig.get('homepage_stats', null)
+    return success(res, data)
+  } catch (err) {
+    return error(res, 'Failed to get stats', 500, err.message)
+  }
+})
+
+router.put('/content/stats', adminAuth, async (req, res) => {
+  try {
+    const { stats } = req.body
+    await PlatformConfig.set('homepage_stats', stats, 'platform', req.user._id)
+    return success(res, stats, 'Stats updated')
+  } catch (err) {
+    return error(res, 'Failed to update stats', 500, err.message)
+  }
+})
+
 // Homepage Content Management
 router.get('/content/games', adminAuth, async (req, res) => {
   try {
