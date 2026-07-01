@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const multer = require('multer')
 const User = require('../models/User')
 const Tournament = require('../models/Tournament')
 const Wallet = require('../models/Wallet')
@@ -7,6 +8,8 @@ const Transaction = require('../models/Transaction')
 const PlatformConfig = require('../models/PlatformConfig')
 const { adminAuth, superAdminAuth } = require('../middleware/auth')
 const { success, error, paginate } = require('../utils/response')
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
 
 // Analytics
 router.get('/analytics', adminAuth, async (req, res) => {
@@ -360,6 +363,28 @@ router.put('/content/stats', adminAuth, async (req, res) => {
     return success(res, stats, 'Stats updated')
   } catch (err) {
     return error(res, 'Failed to update stats', 500, err.message)
+  }
+})
+
+// Logo upload
+router.post('/content/logo', adminAuth, upload.single('logo'), async (req, res) => {
+  try {
+    if (!req.file) return error(res, 'No file uploaded', 400)
+    const { uploadImage } = require('../utils/cloudinary')
+    const result = await uploadImage(req.file.buffer, { public_id: 'site_logo', overwrite: true, resource_type: 'image' })
+    await PlatformConfig.set('site_logo', result.secure_url, 'platform', req.user._id)
+    return success(res, { url: result.secure_url }, 'Logo uploaded successfully')
+  } catch (err) {
+    return error(res, `Logo upload failed: ${err.message}`, 500)
+  }
+})
+
+router.get('/content/logo', adminAuth, async (req, res) => {
+  try {
+    const url = await PlatformConfig.get('site_logo', null)
+    return success(res, { url })
+  } catch (err) {
+    return error(res, 'Failed to get logo', 500, err.message)
   }
 })
 

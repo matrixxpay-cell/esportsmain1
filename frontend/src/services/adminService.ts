@@ -135,4 +135,24 @@ export const adminService = {
     const res = await api.put('/admin/content/reviews', { reviews })
     return res.data.data
   },
+
+  getSiteLogo: async () => {
+    const res = await api.get('/admin/content/logo')
+    return res.data.data?.url as string | null
+  },
+
+  uploadLogo: async (formData: FormData) => {
+    const res = await api.post('/admin/content/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    return res.data.data?.url as string
+  },
+
+  getHomepageStats: async () => {
+    const res = await api.get('/admin/content/stats')
+    return res.data.data
+  },
+
+  updateHomepageStats: async (stats: any) => {
+    const res = await api.put('/admin/content/stats', { stats })
+    return res.data.data
+  },
 }

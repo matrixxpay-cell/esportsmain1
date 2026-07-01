@@ -3,36 +3,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Shield, Star, Award, Globe } from 'lucide-react'
+import api from '@/services/api'
 
-function CountUp({ end, duration = 2 }: { end: number; duration?: number }) {
-  const [count, setCount] = useState(0)
-  const ref = useRef<HTMLSpanElement>(null)
-  const inView = useInView(ref, { once: true })
-  useEffect(() => {
-    if (!inView) return
-    let start = 0
-    const step = end / (duration * 60)
-    const timer = setInterval(() => {
-      start += step
-      if (start >= end) { setCount(end); clearInterval(timer) }
-      else setCount(Math.floor(start))
-    }, 1000 / 60)
-    return () => clearInterval(timer)
-  }, [inView, end, duration])
-  return <span ref={ref}>{count.toLocaleString('en-IN')}</span>
+const DEFAULTS = {
+  totalPlayers: '50,000+',
+  activeTournaments: '120+',
+  prizePoolDistributed: '₹1.2Cr+',
+  winnersThisWeek: '2,400+',
 }
 
 export default function StatsSection() {
+  const [stats, setStats] = useState(DEFAULTS)
+
+  useEffect(() => {
+    api.get('/admin/content/stats').then(r => {
+      if (r.data?.data) setStats({ ...DEFAULTS, ...r.data.data })
+    }).catch(() => {})
+  }, [])
+
+  const items = [
+    { icon: Globe,  value: stats.totalPlayers,          label: 'Registered Players',         sublabel: 'Active Gamers',        color: 'text-saffron',   bg: 'bg-orange-400/10' },
+    { icon: Shield, value: stats.activeTournaments,     label: 'Tournaments Hosted',         sublabel: 'Across All Games',     color: 'text-gold',      bg: 'bg-yellow-400/10' },
+    { icon: Award,  value: stats.prizePoolDistributed,  label: 'Prize Pool Distributed',     sublabel: 'Real Cash Paid Out',   color: 'text-neon-cyan', bg: 'bg-emerald-400/10' },
+    { icon: Star,   value: stats.winnersThisWeek,       label: 'Winners This Week',          sublabel: 'Cash Prizes Claimed',  color: 'text-neon-blue', bg: 'bg-blue-400/10' },
+  ]
+
   return (
     <section className="py-16 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { icon: Globe,  value: 50000,    suffix: '+',    label: 'Registered Players',         sublabel: 'Active Gamers',          color: 'text-saffron',    bg: 'bg-orange-400/10' },
-            { icon: Shield, value: 1200,     suffix: '+',    label: 'Tournaments Hosted',         sublabel: 'Across All Games',        color: 'text-gold',       bg: 'bg-yellow-400/10' },
-            { icon: Award,  value: 12000000, suffix: '+',    label: 'Prize Pool (₹) Distributed', sublabel: 'Real Cash Paid Out',      color: 'text-neon-cyan',  bg: 'bg-emerald-400/10' },
-            { icon: Star,   value: 4.8,      suffix: '/5',   label: 'Player Satisfaction',        sublabel: 'Average Rating',          color: 'text-neon-blue',  bg: 'bg-blue-400/10' },
-          ].map(({ icon: Icon, value, suffix, label, sublabel, color, bg }, i) => (
+          {items.map(({ icon: Icon, value, label, sublabel, color, bg }, i) => (
             <motion.div key={label}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
@@ -40,9 +40,7 @@ export default function StatsSection() {
               <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
                 <Icon className={`w-6 h-6 ${color}`} />
               </div>
-              <div className={`font-rajdhani font-bold text-3xl lg:text-4xl ${color} mb-1`}>
-                <CountUp end={value} />{suffix}
-              </div>
+              <div className={`font-rajdhani font-bold text-3xl lg:text-4xl ${color} mb-1`}>{value}</div>
               <p className="text-white text-sm font-semibold mb-0.5">{label}</p>
               <p className="text-slate-500 text-xs">{sublabel}</p>
             </motion.div>

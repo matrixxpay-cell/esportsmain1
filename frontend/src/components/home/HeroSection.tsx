@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ChevronRight, Trophy, Users, TrendingUp, Flame } from 'lucide-react'
 import { PLATFORM_TAGLINE, STATS } from '@/constants'
+import api from '@/services/api'
 
 const PARTICLES = Array.from({ length: 25 }, (_, i) => ({
   id: i, x: Math.random() * 100, y: Math.random() * 100,
@@ -13,7 +14,13 @@ const PARTICLES = Array.from({ length: 25 }, (_, i) => ({
 
 export default function HeroSection() {
   const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const [dynStats, setDynStats] = useState(STATS)
+  useEffect(() => {
+    setMounted(true)
+    api.get('/admin/content/stats').then(r => {
+      if (r.data?.data) setDynStats(s => ({ ...s, ...r.data.data }))
+    }).catch(() => {})
+  }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-bg">
@@ -77,10 +84,10 @@ export default function HeroSection() {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.65 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {[
-              { icon: Users,       label: 'Total Players',          sublabel: 'Registered Gamers',    value: STATS.totalPlayers,        color: 'text-saffron' },
-              { icon: Trophy,      label: 'Active Tournaments',     sublabel: 'Live Right Now',        value: STATS.activeTournaments,   color: 'text-gold' },
-              { icon: TrendingUp,  label: 'Prize Pool Distributed', sublabel: 'Real Cash Paid Out',    value: STATS.prizePoolDistributed, color: 'text-green-400' },
-              { icon: Flame,       label: 'Winners This Week',      sublabel: 'Cash Prizes Claimed',   value: STATS.winnersThisWeek,     color: 'text-neon-blue' },
+              { icon: Users,       label: 'Total Players',          sublabel: 'Registered Gamers',    value: dynStats.totalPlayers,        color: 'text-saffron' },
+              { icon: Trophy,      label: 'Active Tournaments',     sublabel: 'Live Right Now',        value: dynStats.activeTournaments,   color: 'text-gold' },
+              { icon: TrendingUp,  label: 'Prize Pool Distributed', sublabel: 'Real Cash Paid Out',    value: dynStats.prizePoolDistributed, color: 'text-green-400' },
+              { icon: Flame,       label: 'Winners This Week',      sublabel: 'Cash Prizes Claimed',   value: dynStats.winnersThisWeek,     color: 'text-neon-blue' },
             ].map(({ icon: Icon, label, sublabel, value, color }) => (
               <div key={label} className="stat-card group">
                 <Icon className={`w-6 h-6 ${color} mx-auto mb-2`} />

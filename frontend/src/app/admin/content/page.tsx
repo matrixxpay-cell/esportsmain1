@@ -2,15 +2,17 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Megaphone, Gamepad2, FileText, Image, Users, Star, ArrowRight } from 'lucide-react'
+import { Megaphone, Gamepad2, FileText, Image, Users, Star, ArrowRight, BarChart3, Upload } from 'lucide-react'
 
 export default function AdminContentPage() {
   const items = [
-    { icon: Megaphone, title: 'Announcements', desc: 'Post platform-wide announcements and news to all users.', color: 'text-saffron', bg: 'bg-orange-400/10', href: '/admin/content/announcements' },
+    { icon: Upload, title: 'Site Logo', desc: 'Upload your logo to display in the navbar and as the site icon.', color: 'text-saffron', bg: 'bg-orange-400/10', href: '/admin/content/logo' },
+    { icon: BarChart3, title: 'Homepage Stats', desc: 'Edit the stat numbers shown on the homepage (players, tournaments, prize pool).', color: 'text-green-400', bg: 'bg-green-400/10', href: '/admin/content/stats' },
+    { icon: Megaphone, title: 'Announcements', desc: 'Post platform-wide announcements and news to all users.', color: 'text-gold', bg: 'bg-yellow-400/10', href: '/admin/content/announcements' },
     { icon: Gamepad2, title: 'Games Display', desc: 'Configure which games appear on homepage, their order, and images.', color: 'text-neon-blue', bg: 'bg-neon-blue/10', href: '/admin/content/games' },
-    { icon: Image, title: 'Banner Management', desc: 'Upload and manage homepage banners and promotional images.', color: 'text-green-400', bg: 'bg-green-400/10', href: '/admin/content/banners' },
     { icon: Users, title: 'Sponsors & Partners', desc: 'Manage sponsor logos and partner links on homepage.', color: 'text-yellow-400', bg: 'bg-yellow-400/10', href: '/admin/content/sponsors' },
     { icon: Star, title: 'Player Reviews', desc: 'Manage player testimonials and reviews shown on homepage.', color: 'text-neon-purple', bg: 'bg-purple-400/10', href: '/admin/content/reviews' },
+    { icon: Image, title: 'Banner Management', desc: 'Upload and manage homepage banners and promotional images.', color: 'text-slate-300', bg: 'bg-slate-400/10', badge: 'Coming Soon' },
     { icon: FileText, title: 'Static Pages', desc: 'Edit Terms of Service, Privacy Policy, and FAQ content.', color: 'text-slate-400', bg: 'bg-slate-400/10', badge: 'Coming Soon' },
   ]
 

@@ -8,11 +8,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Bell, Wallet, ChevronDown, LogOut, User, Settings, Shield } from 'lucide-react'
 import { PLATFORM_NAME, NAV_LINKS } from '@/constants'
 import { useAuthStore } from '@/store/authStore'
+import api from '@/services/api'
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.get('/admin/content/logo').then(r => {
+      if (r.data?.data?.url) setLogoUrl(r.data.data.url)
+    }).catch(() => {})
+  }, [])
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout, isAuthenticated } = useAuthStore()
@@ -38,7 +46,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <Image src="/logo-eg.svg" alt="EsportsG" width={36} height={36} className="rounded-xl" style={{ boxShadow: '0 0 16px rgba(255,107,43,0.4)' }} priority />
+            <Image src={logoUrl || '/logo-eg.svg'} alt="EsportsG" width={36} height={36} className="rounded-xl object-contain" style={{ boxShadow: '0 0 16px rgba(255,107,43,0.4)' }} priority />
             <div className="flex flex-col leading-none">
               <span className="font-rajdhani font-black text-xl tracking-wide" style={{
                 background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)',
