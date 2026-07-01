@@ -29,30 +29,30 @@ export default function CTABanner() {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-2 mb-6 text-sm">
               <Flame className="w-4 h-4 text-saffron" />
-              <span className="text-slate-300">50,000+ Khiladi Hamare Saath Hain</span>
+              <span className="text-slate-300">50,000+ Gamers and Counting</span>
             </div>
 
             <h2 className="tagline text-3xl sm:text-4xl md:text-5xl font-baloo font-black mb-3 leading-tight">
               {PLATFORM_TAGLINE}
             </h2>
             <p className="text-slate-400 text-base mb-4 font-rajdhani tracking-wider">
-              अब नहीं खेलेगा इंडिया तो कब खेलेगा?
+              India's Premier Esports Tournament Platform
             </p>
 
             <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-10">
-              India gaming mein rise kar raha hai. Esports tumhara arena hai.
-              Intezaar mat karo — abhi register karo aur real cash prizes ke liye compete karo.
+              India is rising in gaming. Esports is your arena.
+              Don't wait — register now and compete for real cash prizes.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/register"
                 className="btn-primary flex items-center gap-2 px-10 py-4 rounded-xl text-base font-bold group w-full sm:w-auto justify-center">
-                Abhi Shuru Karo
+                Get Started Now
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/dashboard/tournaments"
                 className="btn-ghost flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold w-full sm:w-auto justify-center">
-                Tournaments Dekho
+                Browse Tournaments
               </Link>
             </div>
           </div>

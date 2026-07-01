@@ -4,11 +4,11 @@ import { Toaster } from 'react-hot-toast'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
-  title: 'IndiaEsports — Ab Nahi Khelega India Toh Kab Khelega?',
-  description: "India's Premier Esports Tournament Platform. Play CSGO, BGMI, Valorant, Free Fire, Mobile Legends, Dota 2, and eFootball tournaments with real cash prizes.",
+  title: 'EsportsG — Play. Compete. Win Real Cash.',
+  description: "India's #1 Esports Tournament Platform. Play CSGO, BGMI, Valorant, Free Fire, Mobile Legends, Dota 2, and eFootball tournaments with real cash prizes.",
   keywords: 'esports india, tournament, bgmi, valorant, free fire, csgo, dota 2, mobile legends, cash prize, gaming',
   openGraph: {
-    title: 'IndiaEsports — Ab Nahi Khelega India Toh Kab Khelega?',
+    title: 'EsportsG — Play. Compete. Win Real Cash.',
     description: "India's Premier Esports Tournament Platform",
     type: 'website',
   },

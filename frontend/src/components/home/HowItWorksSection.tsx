@@ -4,10 +4,10 @@ import { motion } from 'framer-motion'
 import { UserPlus, Search, CreditCard, Trophy } from 'lucide-react'
 
 const STEPS = [
-  { step: '01', icon: UserPlus,   title: 'Account Banao',     hinglish: 'Sign Up Karo',       desc: '30 second mein register karo. Email verify karo aur apna gaming profile set karo — bilkul free!',    color: 'text-saffron',   bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
-  { step: '02', icon: Search,     title: 'Tournament Dhundo', hinglish: 'Apna Game Chuno',    desc: 'Free aur paid tournaments browse karo — game, mode, aur prize pool ke hisaab se. Ek click mein register!', color: 'text-gold',      bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
-  { step: '03', icon: CreditCard, title: 'Pay Karo & Khelo',  hinglish: 'UPI Se Bhi Ho Sakta', desc: 'Paid tournament ke liye UPI ya wallet se fees bharo. Room ID aur password milega — start karo!', color: 'text-neon-cyan',  bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  { step: '04', icon: Trophy,     title: 'Jeeto & Paise Pao', hinglish: 'Inaam Seedha Wallet Mein', desc: 'Tournament jeeto aur prize money turant tumhare wallet mein aa jaati hai. Kabhi bhi nikalo!', color: 'text-neon-blue',  bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+  { step: '01', icon: UserPlus,   title: 'Create Your Account',  sub: 'Free & instant signup',         desc: 'Register in 30 seconds. Verify your email and set up your gaming profile — completely free!',               color: 'text-saffron',     bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
+  { step: '02', icon: Search,     title: 'Find a Tournament',    sub: 'Browse by game & prize',         desc: 'Browse free and paid tournaments by game, mode, and prize pool. Register with a single click.',             color: 'text-gold',        bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
+  { step: '03', icon: CreditCard, title: 'Pay & Play',           sub: 'UPI, wallet & more',             desc: 'Pay the entry fee via UPI or your wallet. Get the Room ID and password instantly — let the game begin!',   color: 'text-neon-cyan',   bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+  { step: '04', icon: Trophy,     title: 'Win & Get Paid',       sub: 'Prize direct to wallet',         desc: 'Win the tournament and the prize money hits your wallet instantly. Withdraw anytime, hassle-free.',         color: 'text-neon-blue',   bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
 ]
 
 export default function HowItWorksSection() {
@@ -16,8 +16,8 @@ export default function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
           <span className="section-badge">Simple Process</span>
-          <h2 className="gaming-heading text-3xl sm:text-4xl mb-4">Kaise Kaam Karta Hai?</h2>
-          <p className="text-slate-400 max-w-xl mx-auto">Chaar simple steps mein zero se champion ban jao.</p>
+          <h2 className="gaming-heading text-3xl sm:text-4xl mb-4">How It Works</h2>
+          <p className="text-slate-400 max-w-xl mx-auto">Go from zero to champion in four simple steps.</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
@@ -36,7 +36,7 @@ export default function HowItWorksSection() {
                   <span className={`font-rajdhani font-black text-4xl ${step.color} opacity-30`}>{step.step}</span>
                 </div>
                 <h3 className="font-rajdhani font-bold text-white text-xl mb-0.5">{step.title}</h3>
-                <p className={`text-xs font-semibold ${step.color} mb-2 opacity-80`}>{step.hinglish}</p>
+                <p className={`text-xs font-semibold ${step.color} mb-2 opacity-80`}>{step.sub}</p>
                 <p className="text-slate-400 text-sm leading-relaxed">{step.desc}</p>
               </div>
             </motion.div>

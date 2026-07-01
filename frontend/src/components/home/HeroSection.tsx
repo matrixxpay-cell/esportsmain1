@@ -39,7 +39,7 @@ export default function HeroSection() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-2 mb-8 text-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-slate-300">India Ka No.1 Esports Platform</span>
+            <span className="text-slate-300">India's #1 Esports Platform</span>
             <Flame className="w-3.5 h-3.5 text-saffron" />
           </motion.div>
 
@@ -50,13 +50,13 @@ export default function HeroSection() {
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}
             className="font-rajdhani text-slate-400 text-xl mb-4 tracking-wider">
-            अब नहीं खेलेगा इंडिया तो कब खेलेगा?
+            India's Premier Esports Tournament Platform
           </motion.p>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
             className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-            Khelo <span className="text-saffron font-semibold">CS:GO, BGMI, Valorant, Free Fire</span> aur bahut kuch.
-            Jeeto real cash prizes aur apna naam karo India ke gaming map par.
+            Play <span className="text-saffron font-semibold">CS:GO, BGMI, Valorant, Free Fire</span> and much more.
+            Win real cash prizes and put your name on India's gaming map.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
@@ -64,23 +64,23 @@ export default function HeroSection() {
             <Link href="/dashboard/tournaments"
               className="btn-primary flex items-center gap-2 px-8 py-4 rounded-xl text-base font-bold group w-full sm:w-auto justify-center">
               <Trophy className="w-5 h-5" />
-              Abhi Join Karo
+              Join Now
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link href="/auth/register"
               className="btn-ghost flex items-center gap-2 px-8 py-4 rounded-xl text-base font-bold w-full sm:w-auto justify-center">
               <Users className="w-5 h-5" />
-              Free Account Banao
+              Create Free Account
             </Link>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.65 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {[
-              { icon: Users,       label: 'Total Players',          sublabel: 'Registered Khiladi',  value: STATS.totalPlayers,        color: 'text-saffron' },
-              { icon: Trophy,      label: 'Active Tournaments',     sublabel: 'Chal Rahe Tournaments', value: STATS.activeTournaments,  color: 'text-gold' },
-              { icon: TrendingUp,  label: 'Prize Pool Distributed', sublabel: 'Total Inaam Diya',    value: STATS.prizePoolDistributed, color: 'text-green-400' },
-              { icon: Flame,       label: 'Winners This Week',      sublabel: 'Is Hafte Ke Winners', value: STATS.winnersThisWeek,     color: 'text-neon-blue' },
+              { icon: Users,       label: 'Total Players',          sublabel: 'Registered Gamers',    value: STATS.totalPlayers,        color: 'text-saffron' },
+              { icon: Trophy,      label: 'Active Tournaments',     sublabel: 'Live Right Now',        value: STATS.activeTournaments,   color: 'text-gold' },
+              { icon: TrendingUp,  label: 'Prize Pool Distributed', sublabel: 'Real Cash Paid Out',    value: STATS.prizePoolDistributed, color: 'text-green-400' },
+              { icon: Flame,       label: 'Winners This Week',      sublabel: 'Cash Prizes Claimed',   value: STATS.winnersThisWeek,     color: 'text-neon-blue' },
             ].map(({ icon: Icon, label, sublabel, value, color }) => (
               <div key={label} className="stat-card group">
                 <Icon className={`w-6 h-6 ${color} mx-auto mb-2`} />

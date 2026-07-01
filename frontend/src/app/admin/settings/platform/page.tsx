@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 const FIELDS = [
   { key: 'frontend_url', label: 'Frontend URL', placeholder: 'https://esportsg.in', type: 'url' },
   { key: 'platform_name', label: 'Platform Name', placeholder: 'EsportsG', type: 'text' },
-  { key: 'platform_tagline', label: 'Tagline', placeholder: 'Ab Nahi Khelega India Toh Kab Khelega?', type: 'text' },
+  { key: 'platform_tagline', label: 'Tagline', placeholder: 'Play. Compete. Win Real Cash.', type: 'text' },
   { key: 'platform_description', label: 'Short Description', placeholder: 'India Ka Apna Esports Platform', type: 'text' },
   { key: 'contact_email', label: 'Contact Email', placeholder: 'support@esportsg.com', type: 'email' },
   { key: 'contact_phone', label: 'Contact Phone', placeholder: '+91 XXXXXXXXXX', type: 'text' },

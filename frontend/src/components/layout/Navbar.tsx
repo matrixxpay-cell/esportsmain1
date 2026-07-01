@@ -161,7 +161,7 @@ export default function Navbar() {
                 </Link>
                 <Link href="/auth/register"
                   className="btn-primary px-5 py-2 rounded-lg text-sm font-semibold text-white">
-                  Khelo Abhi
+                  Play Now
                 </Link>
               </>
             )}
@@ -206,7 +206,7 @@ export default function Navbar() {
                   </Link>
                   <Link href="/auth/register" onClick={() => setIsMobileOpen(false)}
                     className="flex-1 text-center btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold text-white">
-                    Khelo Abhi
+                    Play Now
                   </Link>
                 </div>
               ) : (

@@ -28,10 +28,10 @@ export default function StatsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { icon: Globe,  value: 50000,    suffix: '+',    label: 'Registered Players',        sublabel: 'Registered Khiladi',    color: 'text-saffron',    bg: 'bg-orange-400/10' },
-            { icon: Shield, value: 1200,     suffix: '+',    label: 'Tournaments Hosted',        sublabel: 'Tournaments Host Kiye', color: 'text-gold',       bg: 'bg-yellow-400/10' },
-            { icon: Award,  value: 12000000, suffix: '+',    label: 'Prize Pool (₹) Distributed', sublabel: 'Total Inaam Baante',    color: 'text-neon-cyan',  bg: 'bg-emerald-400/10' },
-            { icon: Star,   value: 4.8,      suffix: '/5',   label: 'Player Satisfaction',       sublabel: 'Khiladiyon Ki Rating',  color: 'text-neon-blue',  bg: 'bg-blue-400/10' },
+            { icon: Globe,  value: 50000,    suffix: '+',    label: 'Registered Players',         sublabel: 'Active Gamers',          color: 'text-saffron',    bg: 'bg-orange-400/10' },
+            { icon: Shield, value: 1200,     suffix: '+',    label: 'Tournaments Hosted',         sublabel: 'Across All Games',        color: 'text-gold',       bg: 'bg-yellow-400/10' },
+            { icon: Award,  value: 12000000, suffix: '+',    label: 'Prize Pool (₹) Distributed', sublabel: 'Real Cash Paid Out',      color: 'text-neon-cyan',  bg: 'bg-emerald-400/10' },
+            { icon: Star,   value: 4.8,      suffix: '/5',   label: 'Player Satisfaction',        sublabel: 'Average Rating',          color: 'text-neon-blue',  bg: 'bg-blue-400/10' },
           ].map(({ icon: Icon, value, suffix, label, sublabel, color, bg }, i) => (
             <motion.div key={label}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
