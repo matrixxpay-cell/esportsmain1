@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (role === 'admin' || role === 'super_admin') {
         router.push('/admin/dashboard')
       } else {
-        router.push('/dashboard/tournaments')
+        router.push('/coming-soon')
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please try again.'
