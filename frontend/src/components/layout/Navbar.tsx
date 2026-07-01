@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Bell, Wallet, ChevronDown, LogOut, User, Settings, Shield } from 'lucide-react'
@@ -37,14 +38,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            {/* EsportsG Logo Mark */}
-            <div className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #FF6B2B 0%, #F59E0B 100%)', boxShadow: '0 0 16px rgba(255,107,43,0.4)' }}>
-              <span className="text-white font-rajdhani font-black text-base leading-none">G</span>
-              {/* Tricolor bottom bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-1"
-                style={{ background: 'linear-gradient(90deg, #FF9933 33%, #FFFFFF 33% 66%, #138808 66%)' }} />
-            </div>
+            <Image src="/logo-eg.svg" alt="EsportsG" width={36} height={36} className="rounded-xl" style={{ boxShadow: '0 0 16px rgba(255,107,43,0.4)' }} priority />
             <div className="flex flex-col leading-none">
               <span className="font-rajdhani font-black text-xl tracking-wide" style={{
                 background: 'linear-gradient(135deg, #FF6B2B, #F59E0B)',

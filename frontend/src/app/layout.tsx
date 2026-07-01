@@ -7,10 +7,21 @@ export const metadata: Metadata = {
   title: 'EsportsG — Play. Compete. Win Real Cash.',
   description: "India's #1 Esports Tournament Platform. Play CSGO, BGMI, Valorant, Free Fire, Mobile Legends, Dota 2, and eFootball tournaments with real cash prizes.",
   keywords: 'esports india, tournament, bgmi, valorant, free fire, csgo, dota 2, mobile legends, cash prize, gaming',
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/logo-eg.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icons/icon-192x192.png',
+    shortcut: '/favicon-32.png',
+  },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'EsportsG — Play. Compete. Win Real Cash.',
     description: "India's Premier Esports Tournament Platform",
     type: 'website',
+    images: ['/icons/icon-512x512.png'],
   },
 }
 
