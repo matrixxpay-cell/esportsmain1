@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
       { url: '/logo-eg.svg', type: 'image/svg+xml' },
     ],
-    apple: '/icons/icon-192x192.png',
+    apple: '/apple-touch-icon.png',
     shortcut: '/favicon-32.png',
   },
   manifest: '/manifest.json',

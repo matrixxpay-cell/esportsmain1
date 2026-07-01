@@ -64,8 +64,10 @@ module.exports = {
       fontFamily: {
         gaming: ['Rajdhani', 'sans-serif'],
         sans: ['Poppins', 'system-ui', 'sans-serif'],
-        baloo: ['"Baloo 2"', 'cursive'],
+        baloo: ['"Bebas Neue"', '"Barlow Condensed"', 'sans-serif'],
         rajdhani: ['Rajdhani', 'sans-serif'],
+        bebas: ['"Bebas Neue"', 'sans-serif'],
+        barlow: ['"Barlow Condensed"', 'sans-serif'],
       },
       backdropBlur: { xs: '2px' },
     },

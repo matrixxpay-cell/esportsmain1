@@ -1,45 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <radialGradient id="orb" cx="40%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="#FF8C1A"/>
-      <stop offset="45%" stop-color="#CC4400"/>
-      <stop offset="100%" stop-color="#7A1A00"/>
-    </radialGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FF6B2B" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#FF6B2B" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="noise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-      <feColorMatrix type="saturate" values="0"/>
-      <feBlend in="SourceGraphic" mode="overlay" result="blend"/>
-      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
-    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B2B"/>
+      <stop offset="100%" stop-color="#E85D00"/>
+    </linearGradient>
   </defs>
 
-  <!-- Outer glow -->
-  <circle cx="256" cy="256" r="256" fill="url(#glow)"/>
+  <!-- Orange rounded square background -->
+  <rect width="512" height="512" rx="90" fill="url(#bg)"/>
 
-  <!-- Main orb -->
-  <circle cx="256" cy="256" r="245" fill="url(#orb)"/>
+  <!-- EG lettermark — centered, bold italic angular style matching the logo -->
+  <!-- Translated so the whole EG mark is centered in 512x512 -->
+  <!-- EG group: approx 340w x 240h, centered at 256,256 → translate(86, 136) -->
+  <g fill="white" transform="translate(78, 130) skewX(-8)">
 
-  <!-- Subtle texture overlay -->
-  <circle cx="256" cy="256" r="245" fill="url(#orb)" opacity="0.4" filter="url(#noise)"/>
+    <!-- === E === -->
+    <!-- Left vertical stroke -->
+    <rect x="0" y="0" width="42" height="240" rx="6"/>
+    <!-- Top horizontal bar -->
+    <rect x="0" y="0" width="155" height="42" rx="6"/>
+    <!-- Middle horizontal bar -->
+    <rect x="0" y="99" width="130" height="38" rx="6"/>
+    <!-- Bottom horizontal bar -->
+    <rect x="0" y="198" width="155" height="42" rx="6"/>
 
-  <!-- Highlight shine top-left -->
-  <ellipse cx="180" cy="160" rx="100" ry="70" fill="white" opacity="0.06"/>
+    <!-- gap between E and G -->
 
-  <!-- EG text — bold italic esports style -->
-  <text
-    x="256" y="310"
-    text-anchor="middle"
-    font-family="Arial Black, Impact, sans-serif"
-    font-weight="900"
-    font-size="230"
-    font-style="italic"
-    letter-spacing="-8"
-    fill="white"
-    stroke="rgba(0,0,0,0.15)"
-    stroke-width="4"
-  >EG</text>
+    <!-- === G === -->
+    <!-- Outer arc top bar -->
+    <rect x="178" y="0" width="168" height="42" rx="6"/>
+    <!-- Right vertical top half -->
+    <rect x="304" y="0" width="42" height="145" rx="6"/>
+    <!-- Inner notch (G cutout) — middle right bar -->
+    <rect x="220" y="99" width="126" height="38" rx="6"/>
+    <!-- Bottom bar -->
+    <rect x="178" y="198" width="168" height="42" rx="6"/>
+    <!-- Left vertical full -->
+    <rect x="178" y="0" width="42" height="240" rx="6"/>
+  </g>
 </svg>

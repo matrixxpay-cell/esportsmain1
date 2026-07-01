@@ -44,7 +44,7 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
-            className="font-baloo font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-tight mb-4">
+            className="font-bebas tracking-wider text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-none mb-4 uppercase">
             <span className="tagline block">{PLATFORM_TAGLINE}</span>
           </motion.h1>
 

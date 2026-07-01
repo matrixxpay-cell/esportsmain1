@@ -32,7 +32,7 @@ export default function CTABanner() {
               <span className="text-slate-300">50,000+ Gamers and Counting</span>
             </div>
 
-            <h2 className="tagline text-3xl sm:text-4xl md:text-5xl font-baloo font-black mb-3 leading-tight">
+            <h2 className="tagline text-4xl sm:text-5xl md:text-6xl font-bebas tracking-wider mb-3 leading-none uppercase">
               {PLATFORM_TAGLINE}
             </h2>
             <p className="text-slate-400 text-base mb-4 font-rajdhani tracking-wider">
