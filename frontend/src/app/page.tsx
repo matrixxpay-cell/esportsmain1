@@ -1,7 +1,6 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import HeroSection from '@/components/home/HeroSection'
-import StatsSection from '@/components/home/StatsSection'
 import LiveTournamentsSection from '@/components/home/LiveTournamentsSection'
 import UpcomingTournamentsSection from '@/components/home/UpcomingTournamentsSection'
 import GamesSection from '@/components/home/GamesSection'
@@ -19,7 +18,6 @@ export default function HomePage() {
     <main className="min-h-screen bg-dark-950">
       <Navbar />
       <HeroSection />
-      <StatsSection />
       <LiveTournamentsSection />
       <UpcomingTournamentsSection />
       <GamesSection />
