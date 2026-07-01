@@ -6,12 +6,12 @@ import { ChevronDown } from 'lucide-react'
 
 const FAQS = [
   {
-    q: 'Is IndiaEsports legal to play on?',
-    a: 'Yes! IndiaEsports is a skill-based gaming platform. Esports competitions are recognized as skill-based competitions in India. We comply with all applicable Indian laws and regulations.',
+    q: 'Is EsportsG legal to play on?',
+    a: 'Yes! EsportsG is a skill-based gaming platform. Esports competitions are recognized as skill-based competitions in India. We comply with all applicable Indian laws and regulations.',
   },
   {
     q: 'How do I withdraw my winnings?',
-    a: 'Winnings are credited to your IndiaEsports wallet instantly after tournament results. You can withdraw via UPI, IMPS, or bank transfer. Minimum withdrawal is ₹100. Withdrawals are processed within 24 hours.',
+    a: 'Winnings are credited to your EsportsG wallet instantly after tournament results. You can withdraw via UPI, IMPS, or bank transfer. Minimum withdrawal is ₹100. Withdrawals are processed within 24 hours.',
   },
   {
     q: 'Are free tournaments really free?',

@@ -9,7 +9,7 @@ const DEFAULT_REVIEWS = [
   { name: 'Arjun Sharma', state: 'Delhi', game: 'BGMI', rating: 5, text: 'Won ₹15,000 in my first month! The platform is super clean, payouts are instant. Best esports platform in India!', photoUrl: '' },
   { name: 'Priya Nair', state: 'Kerala', game: 'Valorant', rating: 5, text: 'As a female gamer, I love how inclusive this platform is. Great tournaments, fair matchmaking, and awesome community!', photoUrl: '' },
   { name: 'Rahul Gupta', state: 'UP', game: 'CS:GO', rating: 5, text: 'The AI bracket system is mind-blowing. No manual errors, everything automated. Professional tournament management!', photoUrl: '' },
-  { name: 'Sanjay Kumar', state: 'Bihar', game: 'Free Fire', rating: 5, text: 'From a small village to national champion — IndiaEsports made it possible. Ab nahi khelega India toh kab khelega!', photoUrl: '' },
+  { name: 'Sanjay Kumar', state: 'Bihar', game: 'Free Fire', rating: 5, text: 'From a small village to national champion — EsportsG made it possible. Ab nahi khelega India toh kab khelega!', photoUrl: '' },
   { name: 'Deepak Verma', state: 'Rajasthan', game: 'BGMI', rating: 5, text: 'The wallet system is seamless. UPI deposits and withdrawals are instant. Trusted the most among all platforms.', photoUrl: '' },
   { name: 'Akash Mehta', state: 'Gujarat', game: 'Dota 2', rating: 5, text: 'Room IDs are shared automatically after registration. No manual coordination needed. Super professional!', photoUrl: '' },
 ]

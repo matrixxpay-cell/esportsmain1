@@ -97,7 +97,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`)
-  console.log(`🎮 IndiaEsports API — Ab Nahi Khelega India Toh Kab Khelega?`)
+  console.log(`🎮 EsportsG API — Play. Compete. Win Real Cash.`)
 })
 
 module.exports = { app, server, io }
