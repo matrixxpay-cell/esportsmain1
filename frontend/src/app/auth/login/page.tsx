@@ -38,8 +38,11 @@ export default function LoginPage() {
       toast.success('Welcome back!')
       const role = res.user?.role
       if (role === 'admin' || role === 'super_admin') {
+        // Set admin cookie so middleware allows full site access
+        document.cookie = `eg_admin=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
         router.push('/admin/dashboard')
       } else {
+        document.cookie = 'eg_admin=; path=/; max-age=0'
         router.push('/coming-soon')
       }
     } catch (err: unknown) {

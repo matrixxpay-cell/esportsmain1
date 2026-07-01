@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const ALLOWED_PREFIXES = [
+const ALWAYS_ALLOWED = [
   '/coming-soon',
   '/auth/',
-  '/admin/',
   '/_next/',
   '/api/',
   '/icons/',
@@ -18,14 +17,20 @@ const ALLOWED_PREFIXES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Allow static files and explicitly allowed paths
-  if (ALLOWED_PREFIXES.some(p => pathname.startsWith(p))) {
+  // Always allow these paths
+  if (ALWAYS_ALLOWED.some(p => pathname.startsWith(p))) {
     return NextResponse.next()
   }
 
-  // Allow root path (coming soon IS the home now)
-  if (pathname === '/') {
+  // Admin users (cookie set on login) bypass coming-soon
+  const isAdmin = request.cookies.get('eg_admin')?.value === '1'
+  if (isAdmin) {
     return NextResponse.next()
+  }
+
+  // Root → coming soon
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/coming-soon', request.url))
   }
 
   // Everything else → coming soon

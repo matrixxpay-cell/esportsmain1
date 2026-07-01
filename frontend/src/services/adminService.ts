@@ -136,6 +136,16 @@ export const adminService = {
     return res.data.data
   },
 
+  getSiteMode: async () => {
+    const res = await api.get('/admin/settings/site-mode')
+    return res.data.data as { comingSoon: boolean; registrationDisabled: boolean }
+  },
+
+  updateSiteMode: async (data: { comingSoon?: boolean; registrationDisabled?: boolean }) => {
+    const res = await api.put('/admin/settings/site-mode', data)
+    return res.data.data
+  },
+
   getSiteLogo: async () => {
     const res = await api.get('/admin/content/logo')
     return res.data.data?.url as string | null

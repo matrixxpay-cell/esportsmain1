@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -8,10 +8,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock, User, Phone, UserPlus, Gift } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, UserPlus, Gift, UserX } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/services/authService'
 import { PLATFORM_NAME, PLATFORM_TAGLINE } from '@/constants'
+import api from '@/services/api'
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Max 20 characters').regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores'),
@@ -31,8 +32,15 @@ type RegisterForm = z.infer<typeof registerSchema>
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [regDisabled, setRegDisabled] = useState(false)
   const router = useRouter()
   const { login } = useAuthStore()
+
+  useEffect(() => {
+    api.get('/content/site-mode').then(r => {
+      if (r.data?.data?.registrationDisabled) setRegDisabled(true)
+    }).catch(() => {})
+  }, [])
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -77,7 +85,16 @@ export default function RegisterPage() {
         <p className="text-slate-400 text-sm">{PLATFORM_TAGLINE}</p>
       </div>
 
-      <div className="glass-card rounded-2xl p-6">
+      {regDisabled && (
+        <div className="glass-card rounded-2xl p-6 border border-red-500/20 text-center mb-4">
+          <UserX className="w-10 h-10 text-red-400 mx-auto mb-3" />
+          <h3 className="font-rajdhani font-bold text-white text-lg mb-1">Registrations Closed</h3>
+          <p className="text-slate-400 text-sm">New registrations are temporarily disabled. Check back later.</p>
+          <Link href="/auth/login" className="inline-block mt-4 text-saffron text-sm hover:underline">Already have an account? Login →</Link>
+        </div>
+      )}
+
+      <div className={`glass-card rounded-2xl p-6 ${regDisabled ? 'opacity-40 pointer-events-none select-none' : ''}`}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Username */}

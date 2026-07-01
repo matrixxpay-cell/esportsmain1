@@ -29,7 +29,12 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: true }),
       setToken: (token) => set({ token }),
       login: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => {
+        if (typeof document !== 'undefined') {
+          document.cookie = 'eg_admin=; path=/; max-age=0'
+        }
+        set({ user: null, token: null, isAuthenticated: false })
+      },
       updateUser: (data) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...data } : null,

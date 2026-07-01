@@ -366,14 +366,47 @@ router.put('/content/stats', adminAuth, async (req, res) => {
   }
 })
 
+// Site mode (coming soon toggle, registration toggle)
+router.get('/settings/site-mode', adminAuth, async (req, res) => {
+  try {
+    const comingSoon = await PlatformConfig.get('coming_soon_enabled', 'false')
+    const registrationDisabled = await PlatformConfig.get('registration_disabled', 'false')
+    return success(res, {
+      comingSoon: comingSoon === 'true' || comingSoon === true,
+      registrationDisabled: registrationDisabled === 'true' || registrationDisabled === true,
+    })
+  } catch (err) {
+    return error(res, 'Failed to get site mode', 500, err.message)
+  }
+})
+
+router.put('/settings/site-mode', adminAuth, async (req, res) => {
+  try {
+    const { comingSoon, registrationDisabled } = req.body
+    if (comingSoon !== undefined) await PlatformConfig.set('coming_soon_enabled', String(comingSoon), 'platform', req.user._id)
+    if (registrationDisabled !== undefined) await PlatformConfig.set('registration_disabled', String(registrationDisabled), 'platform', req.user._id)
+    return success(res, { comingSoon, registrationDisabled }, 'Site mode updated')
+  } catch (err) {
+    return error(res, 'Failed to update site mode', 500, err.message)
+  }
+})
+
 // Logo upload
 router.post('/content/logo', adminAuth, upload.single('logo'), async (req, res) => {
   try {
     if (!req.file) return error(res, 'No file uploaded', 400)
-    const { uploadImage } = require('../utils/cloudinary')
-    const result = await uploadImage(req.file.buffer, { public_id: 'site_logo', overwrite: true, resource_type: 'image' })
-    await PlatformConfig.set('site_logo', result.secure_url, 'platform', req.user._id)
-    return success(res, { url: result.secure_url }, 'Logo uploaded successfully')
+    let url
+    try {
+      const { uploadImage } = require('../utils/cloudinary')
+      const result = await uploadImage(req.file.buffer, { public_id: 'site_logo', overwrite: true, resource_type: 'image' })
+      url = result.secure_url
+    } catch (cloudErr) {
+      // Fallback: store as base64 data URL
+      const mime = req.file.mimetype || 'image/png'
+      url = `data:${mime};base64,${req.file.buffer.toString('base64')}`
+    }
+    await PlatformConfig.set('site_logo', url, 'platform', req.user._id)
+    return success(res, { url }, 'Logo uploaded successfully')
   } catch (err) {
     return error(res, `Logo upload failed: ${err.message}`, 500)
   }

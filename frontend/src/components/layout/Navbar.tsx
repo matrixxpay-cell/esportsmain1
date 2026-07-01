@@ -17,7 +17,7 @@ export default function Navbar() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    api.get('/admin/content/logo').then(r => {
+    api.get('/content/logo').then(r => {
       if (r.data?.data?.url) setLogoUrl(r.data.data.url)
     }).catch(() => {})
   }, [])

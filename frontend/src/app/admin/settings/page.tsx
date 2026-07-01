@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Settings, Key, Globe, Shield, Bell, ChevronRight } from 'lucide-react'
+import { Settings, Key, Globe, Shield, Bell, ChevronRight, Clock } from 'lucide-react'
 
 const CARDS = [
+  { icon: Clock, title: 'Site Mode', desc: 'Toggle coming soon mode and enable/disable user registration.', color: 'text-saffron', bg: 'bg-orange-400/10', href: '/admin/settings/site-mode' },
   { icon: Key, title: 'API Keys', desc: 'Manage Razorpay, Cloudinary, and other third-party API keys.', color: 'text-yellow-400', bg: 'bg-yellow-400/10', href: '/admin/settings/api-keys' },
-  { icon: Globe, title: 'Platform Config', desc: 'Configure platform name, tagline, and global settings.', color: 'text-saffron', bg: 'bg-orange-400/10', href: '/admin/settings/platform' },
+  { icon: Globe, title: 'Platform Config', desc: 'Configure platform name, tagline, and global settings.', color: 'text-neon-blue', bg: 'bg-blue-400/10', href: '/admin/settings/platform' },
   { icon: Shield, title: 'Security', desc: 'Manage admin roles, 2FA settings, and security policies.', color: 'text-green-400', bg: 'bg-green-400/10', href: '/admin/settings/security' },
   { icon: Bell, title: 'Email Templates', desc: 'Customize email templates for verification, prizes, and notifications.', color: 'text-neon-purple', bg: 'bg-purple-400/10', href: '/admin/settings/email' },
 ]

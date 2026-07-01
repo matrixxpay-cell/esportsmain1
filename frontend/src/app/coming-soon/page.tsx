@@ -7,7 +7,8 @@ import { motion } from 'framer-motion'
 import { Gamepad2, Trophy, Zap, LogIn } from 'lucide-react'
 
 function Countdown() {
-  const target = new Date('2025-08-15T00:00:00')
+  // July 7, 2026 at 5:30 PM IST (UTC+5:30 = 12:00 UTC)
+  const target = new Date('2026-07-07T12:00:00Z')
   const [diff, setDiff] = useState(Math.max(0, target.getTime() - Date.now()))
 
   useEffect(() => {
